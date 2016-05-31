@@ -1,0 +1,95 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of headervariablesNDI</title>
+  <meta name="keywords" content="headervariablesNDI">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">NDIWAVES</a> &gt; headervariablesNDI.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for NDIWAVES&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>headervariablesNDI
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [descriptor,unit,dimension]=headervariablesNDI(nsensor,sensornames) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"></pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="NDIwave2pos.html" class="code" title="function NDIwave2pos(inpath,outpath,sessfile,triallist,sensornames,ndig,filterspecs,idownfac)">NDIwave2pos</a>	NDIwave2pos(inpath,outpath,sessfile,triallist,sensornames,ndig,filterspecs,idownfac)</li></ul>
+<!-- crossreference -->
+
+
+<h2><a name="_download"></a>DOWNLOAD <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<p><a href="headervariablesNDI.m">headervariablesNDI.m</a></p>
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [descriptor,unit,dimension]=headervariablesNDI(nsensor,sensornames)</a>
+0002 
+0003 ntrans=6;
+0004 ndim=3;
+0005 
+0006 realnames=0;
+0007 <span class="keyword">if</span> nargin&gt;1
+0008 <span class="keyword">if</span> ~isempty(sensornames)
+0009     <span class="keyword">if</span> size(sensornames,1)==nsensor
+0010         realnames=1;
+0011     <span class="keyword">else</span>
+0012         disp([<span class="string">'Sensor names must have '</span> int2str(nsensor) <span class="string">' entries'</span>]);
+0013         <span class="keyword">return</span>;
+0014     <span class="keyword">end</span>;
+0015 <span class="keyword">end</span>;
+0016 <span class="keyword">end</span>;
+0017 
+0018 sensname=<span class="string">'Sensor'</span>;
+0019 
+0020 descriptor=str2mat(<span class="string">'posx'</span>,<span class="string">'posy'</span>,<span class="string">'posz'</span>,<span class="string">'phi'</span>,<span class="string">'theta'</span>,<span class="string">'status'</span>,<span class="string">'compdist'</span>);
+0021 unit=str2mat(<span class="string">'mm'</span>,<span class="string">'mm'</span>,<span class="string">'mm'</span>,<span class="string">'deg'</span>,<span class="string">'deg'</span>,<span class="string">''</span>,<span class="string">'mm'</span>);
+0022 
+0023 dd=cell(ndim,1);
+0024 dd{1}=<span class="string">'Time'</span>;
+0025 dd{2}=<span class="string">'Coordinate'</span>;
+0026 
+0027 dd{3}=sensname;
+0028 
+0029 aa=cell(ndim,1);
+0030 aa{1}=[];
+0031 aa{2}=descriptor;
+0032 
+0033 <span class="keyword">if</span> realnames
+0034     aa{3}=sensornames;
+0035 <span class="keyword">else</span>
+0036 ss=strcat(sensname,int2str((1:nsensor)'));
+0037 ss=char(strrep(cellstr(ss),<span class="string">' '</span>,<span class="string">'0'</span>));
+0038 aa{3}=ss;
+0039 <span class="keyword">end</span>;
+0040 
+0041 uu=(blanks(ndim))';
+0042 
+0043 dimension.descriptor=char(dd);
+0044 dimension.unit=uu;      <span class="comment">%irrelevant for this kind of data</span>
+0045 dimension.axis=aa;
+0046 
+0047</pre></div>
+<hr><address>Generated on Wed 30-Jan-2013 17:04:26 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

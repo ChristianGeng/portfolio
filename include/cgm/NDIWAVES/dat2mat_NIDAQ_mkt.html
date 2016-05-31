@@ -1,0 +1,335 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of dat2mat_NIDAQ_mkt</title>
+  <meta name="keywords" content="dat2mat_NIDAQ_mkt">
+  <meta name="description" content="dat2mat_NIDAQ(synchFile,daqFile,chanlist,outpath,downfac,coff_file,calstruc)">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">NDIWAVES</a> &gt; dat2mat_NIDAQ_mkt.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for NDIWAVES&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>dat2mat_NIDAQ_mkt
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>dat2mat_NIDAQ(synchFile,daqFile,chanlist,outpath,downfac,coff_file,calstruc)</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function dat2mat_NIDAQ_mkt(synchFile,recpath,chanlist,exampleFile,outpath,ndig,downfac,coff_file,calstruc) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> dat2mat_NIDAQ(synchFile,daqFile,chanlist,outpath,downfac,coff_file,calstruc)
+ Renaming scheme
+ chanlist: Channels that need to be extracted from the DAQ file
+
+ Gepspeichert wird aufgrund der item_id
+ Gelesen wird aus dem timFile(=synchFile)
+ 21-Jun-2012: 
+ + error caused by negative start indices
+ + Reorganized code to output correct filename in case of
+ warning or error
+ 
+ SEE ALSO <a href="dat2mat_NIDAQ_mkt.html" class="code" title="function dat2mat_NIDAQ_mkt(synchFile,recpath,chanlist,exampleFile,outpath,ndig,downfac,coff_file,calstruc)">dat2mat_NIDAQ_mkt</a>.
+
+  updated $21-Jun-2012$ CGeng</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="../usertemplates/NDIsingle/do_dat2mat_NIDAQ.html" class="code" title="function do_dat2mat_NIDAQ">do_dat2mat_NIDAQ</a>	DO_DAT2MAT_NIDAQ: Extract synchronized audio data</li></ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="#_sub1" class="code">functionname=</a></li></ul>
+<h2><a name="_download"></a>DOWNLOAD <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<p><a href="dat2mat_NIDAQ_mkt.m">dat2mat_NIDAQ_mkt.m</a></p>
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function dat2mat_NIDAQ_mkt(synchFile,recpath,chanlist,exampleFile,outpath,ndig,downfac,coff_file,calstruc)</a>
+0002 <span class="comment">% dat2mat_NIDAQ(synchFile,daqFile,chanlist,outpath,downfac,coff_file,calstruc)</span>
+0003 <span class="comment">% Renaming scheme</span>
+0004 <span class="comment">% chanlist: Channels that need to be extracted from the DAQ file</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% Gepspeichert wird aufgrund der item_id</span>
+0007 <span class="comment">% Gelesen wird aus dem timFile(=synchFile)</span>
+0008 <span class="comment">% 21-Jun-2012:</span>
+0009 <span class="comment">% + error caused by negative start indices</span>
+0010 <span class="comment">% + Reorganized code to output correct filename in case of</span>
+0011 <span class="comment">% warning or error</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">% SEE ALSO dat2mat_NIDAQ_mkt.</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">%  updated $21-Jun-2012$ CGeng</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">%</span>
+0018 
+0019 <a name="_sub1" href="#_subfunctions" class="code">functionname=</a><span class="string">'dat2mat_NIDAQ: Version 20-Oct-2011'</span>;
+0020 
+0021 saveop=<span class="string">''</span>;
+0022 myver=version;
+0023 <span class="keyword">if</span> myver(1)&gt;<span class="string">'6'</span> saveop=<span class="string">'-v6'</span>; <span class="keyword">end</span>;
+0024 
+0025 timFile=synchFile;
+0026 timDat=mymatin(timFile,<span class="string">'data'</span>);
+0027 private=mymatin(timFile,<span class="string">'private'</span>);
+0028 
+0029 sfcorr=mymatin(timFile,<span class="string">'samplerate'</span>);
+0030 
+0031 totalcuts=size(timDat,1);
+0032 cutlabel=mymatin(timFile,<span class="string">'label'</span>);
+0033 <span class="comment">%exist([timfile,'.mat'])</span>
+0034 
+0035 externalcomment=mymatin(timFile,<span class="string">'comment'</span>,<span class="string">'No comment in input cut file'</span>);
+0036 warning off;
+0037 synchfileprivate=mymatin(timFile,<span class="string">'private'</span>);
+0038 warning on;
+0039 
+0040 triallist=unique(timDat(:,4));
+0041 maxtrial=max(triallist);
+0042 
+0043 namestr=[<span class="string">'Control cut file: '</span> timFile crlf];
+0044 namestr=[namestr <span class="string">'DAQ file: '</span> recpath crlf];
+0045 
+0046 descrTmp=char(private.NIDAQ.channels.Name);
+0047 descriptor=(descrTmp(chanlist,:));
+0048 unit=char(private.NIDAQ.channels.MeasurementType);
+0049 
+0050 idown=1;
+0051 <span class="keyword">if</span> nargin&gt;6
+0052     <span class="keyword">if</span> ~isempty(downfac) idown=downfac; <span class="keyword">end</span>;
+0053 <span class="keyword">end</span>;
+0054 
+0055 ncof=0;
+0056 
+0057 <span class="keyword">if</span> nargin&gt;7
+0058     cofname=coff_file;
+0059     
+0060     <span class="keyword">if</span> ~isempty(cofname)
+0061         bcof=mymatin(cofname,<span class="string">'data'</span>);
+0062         filtcomment=mymatin(cofname,<span class="string">'comment'</span>,<span class="string">'&lt;No filter comment&gt;'</span>);
+0063         ncof=length(bcof);
+0064     <span class="keyword">else</span>
+0065         <span class="keyword">if</span> idown~=1
+0066             disp(<span class="string">'Unable to continue without filter file!'</span>);
+0067             <span class="keyword">return</span>;
+0068         <span class="keyword">end</span>;
+0069     <span class="keyword">end</span>;
+0070     
+0071 <span class="keyword">end</span>;
+0072 
+0073 sftemp=private.NIDAQ.NISession.Rate;
+0074 dectemp=0; <span class="comment">% I don't have the decimation stuff</span>
+0075 
+0076 
+0077 nchan=length(chanlist); <span class="comment">% The channels that need to be extracted from the DAQ file</span>
+0078 
+0079 theinfile=[recpath int2str0vec(exampleFile)];
+0080 tmp=load([recpath int2str0vec(exampleFile)],<span class="string">'nchan'</span>); <span class="comment">%daqFile</span>
+0081 disp([<span class="string">'loading File '</span> theinfile]);
+0082 nchanin=tmp.nchan;
+0083 
+0084 sfchannel=sftemp/(dectemp+1);
+0085 sfbase=sfchannel*nchanin;
+0086 sf=sfchannel./idown;
+0087 samplerate=sf;
+0088 timDat=round(timDat.*sf)./sf;
+0089 
+0090 sfTmpStr=sprintf(<span class="string">'%i'</span>,sf);
+0091 namestr=[namestr <span class="string">'Channels extracted: '</span> strm2rv(descriptor,<span class="string">' '</span>) crlf];
+0092 namestr=[namestr <span class="string">'Output sample rate: '</span> sfTmpStr crlf];
+0093 <span class="comment">%decimation filter specs:</span>
+0094 <span class="keyword">if</span> ncof
+0095     namestr=[namestr <span class="string">'Decimation filter file: '</span> cofname <span class="string">' ncof: '</span> int2str(ncof) crlf];
+0096 <span class="keyword">end</span>;
+0097 disp(namestr)
+0098 
+0099 unit=char(private.NIDAQ.channels.MeasurementType);
+0100 unit=cellstr(unit(chanlist,:));
+0101 
+0102 
+0103 <span class="comment">%============================================</span>
+0104 <span class="comment">%Prepare for calibration to physical values</span>
+0105 <span class="comment">%=============================================</span>
+0106 
+0107 <span class="comment">% CODE UNUSED, ONLY COPIED FROM PHIL %</span>
+0108 
+0109 califlag=0;
+0110 <span class="keyword">if</span> (nargin&gt;8 &amp;&amp; isstruct(calstruc))
+0111     califlag=1;
+0112     <span class="comment">%note: Voltages specified at input to DAT recorder</span>
+0113     <span class="comment">%      i.e actual output voltage of the transduction system</span>
+0114     
+0115     v_ref=calstruc.ref_voltage;
+0116     p_ref=calstruc.physical_value;
+0117     outunit=calstruc.output_units;
+0118     
+0119     <span class="keyword">for</span> ido=1:nchan
+0120         
+0121         tmpunit=deblank(outunit(ido,:));
+0122         
+0123         sss=[<span class="string">'Input Channel '</span> int2str(chanlist(ido)) <span class="string">'. Reference voltages and values: '</span> num2stre([v_ref(ido,:) p_ref(ido,:)],5) <span class="string">' . Output units '</span> tmpunit];
+0124         disp(sss);
+0125         namestr=[namestr sss crlf];
+0126         
+0127         
+0128         unit{ido}=tmpunit;
+0129     <span class="keyword">end</span>;
+0130     
+0131     
+0132     <span class="keyword">return</span>
+0133     <span class="comment">%for calibrated data allow processing to be restricted to a selection of</span>
+0134     <span class="comment">%trials (in case calibration changes)</span>
+0135     <span class="keyword">if</span> isfield(calstruc,<span class="string">'trial_list'</span>)
+0136         triallist=calstruc.trial_list;
+0137         disp(<span class="string">'Using trial list from calibration structure'</span>);
+0138     <span class="keyword">end</span>;
+0139     
+0140     private.dat2mat_ii_fx.calstruc=calstruc;
+0141     
+0142 <span class="keyword">end</span>;
+0143 
+0144 
+0145 unit=char(unit);
+0146 namestr=[namestr <span class="string">'First, last, total trials processed : '</span> int2str([triallist(1) triallist(end) length(triallist)]) crlf];
+0147 namestr=[namestr <span class="string">'Output file path: '</span> outpath crlf];
+0148 
+0149 externalcomment=framecomment(externalcomment,<span class="string">'Comment from synch file'</span>);
+0150 namestr=[namestr externalcomment];
+0151 comment=namestr;
+0152 comment=framecomment(comment,functionname);
+0153 
+0154 chanmax=zeros(totalcuts,nchan);
+0155 chanmin=chanmax;
+0156 chanmean=chanmax;
+0157 timdebug=0;
+0158 
+0159 <span class="keyword">for</span> loop=1:totalcuts <span class="comment">% through formerly extracted sweep times</span>
+0160     
+0161     item_id=deblank(cutlabel(loop,:));
+0162     <span class="keyword">try</span>,
+0163         <span class="comment">% for the cases in which label has been saved as a numeric</span>
+0164         <span class="comment">% array</span>
+0165         outFnum=int2str0vec(item_id,ndig);
+0166     <span class="keyword">catch</span>,
+0167         outFnum=int2str0vec(str2num(item_id),ndig);
+0168     <span class="keyword">end</span>
+0169     
+0170     
+0171     outFileName=[outpath outFnum];
+0172     
+0173     timbegin=timDat(loop,1);
+0174     timend=timDat(loop,2);
+0175     mytrial=timDat(loop,4);
+0176     
+0177     <span class="comment">% timFile ist hier = Synchfile. Der gelesene File wird aus &quot;data&quot; aus dem</span>
+0178     <span class="comment">% gecutteten synchFile extrahiert</span>
+0179     tmpFile=[recpath int2str0vec(timDat(loop,4))];
+0180     
+0181 <span class="comment">%     disp([ tmpFile ' -&gt; ' outFileName]);</span>
+0182     
+0183     
+0184     
+0185     vtr=find(mytrial==triallist);
+0186     
+0187     
+0188     <span class="keyword">if</span> ~isempty(vtr)
+0189         timlength=timend-timbegin;
+0190         
+0191         <span class="comment">%        keep timbegin as &quot;time of day&quot;</span>
+0192         
+0193         
+0194         
+0195         <span class="comment">%position input file at correct offset</span>
+0196         <span class="comment">%?????read all data at once for current channel and current sweep</span>
+0197         <span class="comment">%         filepos=round(timbegin*sfchannel)*framebyt;</span>
+0198         filepos=round(timbegin*sfchannel);
+0199         
+0200         
+0201         <span class="keyword">if</span> timdebug
+0202             disp ([<span class="string">'cut#/trial#/label: '</span> int2str(loop) <span class="string">' '</span> int2str(mytrial) <span class="string">' '</span> item_id]);
+0203             disp ([<span class="string">'Times: '</span> num2str(timbegin) <span class="string">' '</span> num2str(timend)]);
+0204             disp ([<span class="string">'Input file byte offset: '</span> int2str(filepos)]);
+0205             <span class="comment">%       disp (['starts at % of infile ' num2str(100*(filepos/daqinfo.ObjInfo.SamplesndigAcquired))]);</span>
+0206         <span class="keyword">end</span>
+0207         private.NIDAQ.NISession.Rate;
+0208         dectemp=0; <span class="comment">% I don't have the decimation stuff</span>
+0209         sfchannel=sftemp/(dectemp+1);
+0210         
+0211         sfbase=sfchannel*nchanin;
+0212         sf=sfchannel./idown;
+0213         samplerate=sf;
+0214         datlen=round(timlength*sfchannel);
+0215         fileend=round(timend*sfchannel);
+0216         
+0217         
+0218         
+0219         DAQDat=load(tmpFile,<span class="string">'DAQData'</span>);
+0220         
+0221         <span class="comment">%data=DAQDat.DAQData;</span>
+0222         <span class="comment">%clear DAQData</span>
+0223         data=mymatin(tmpFile,<span class="string">'DAQData'</span>);
+0224        
+0225         <span class="keyword">try</span>,
+0226             data=data(filepos:filepos+datlen,chanlist);
+0227         <span class="keyword">catch</span>
+0228             warning([<span class="string">'!!!!truncating : '</span> num2str(((filepos+datlen)-length(data))/samplerate) <span class="string">' secs. File likely to be corrupted!'</span>])
+0229             disp(filepos)
+0230             
+0231             <span class="keyword">if</span> (filepos&lt;1)
+0232                 warning(<span class="string">'!!!index negative, probably synch pulses are problematic, file likely to be corrupted!'</span>);
+0233                 <span class="keyword">continue</span>;
+0234             <span class="keyword">else</span>,
+0235                 data=data(filepos:length(data),chanlist);
+0236                 datlen=length(data);
+0237             <span class="keyword">end</span>;
+0238             
+0239             
+0240         <span class="keyword">end</span>
+0241         
+0242         <span class="keyword">if</span> ncof
+0243             datlen=round(datlen/idown);    <span class="comment">%actually tried above to ensure it would be an integer</span>
+0244             datout=[];
+0245             <span class="keyword">for</span> jj=1:nchan
+0246                 <span class="keyword">try</span>, datout(:,jj)=decifir(bcof,double(data(:,jj)),idown); <span class="keyword">catch</span>, keyboard; <span class="keyword">end</span>;
+0247             <span class="keyword">end</span>;
+0248             data=datout;
+0249             clear datout
+0250         <span class="keyword">end</span>;
+0251         chanmax(loop,:)=max(data);
+0252         chanmin(loop,:)=min(data);
+0253         chanmean(loop,:)=mean(data);
+0254         
+0255         voltdebug=0;
+0256         <span class="keyword">if</span> voltdebug
+0257             disp([<span class="string">'channel max. amplitude: '</span>,num2str(chanmax(loop,:))]);
+0258             <span class="comment">%         disp(chanmax(loop,:));</span>
+0259             disp([<span class="string">'channel min. amplitude: '</span>,num2str(chanmin(loop,:))]);
+0260             <span class="comment">%         disp(chanmin(loop,:));</span>
+0261             disp([<span class="string">'channel average amplitude: '</span>,num2str(chanmean(loop,:))]);
+0262             <span class="comment">%         disp(chanmean(loop,:));</span>
+0263         <span class="keyword">end</span>
+0264         
+0265         disp([ tmpFile <span class="string">' -&gt; '</span> outFileName]);
+0266         save(outFileName,<span class="string">'data'</span>,<span class="string">'samplerate'</span>,<span class="string">'comment'</span>,<span class="string">'descriptor'</span>,<span class="string">'unit'</span>,<span class="string">'item_id'</span>,saveop);   <span class="comment">%turn off version 7 compression</span>
+0267         
+0268     <span class="keyword">end</span>;
+0269     
+0270 <span class="keyword">end</span>
+0271 
+0272</pre></div>
+<hr><address>Generated on Wed 30-Jan-2013 17:04:26 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,203 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of getsynchWaveNIDAQ_mkt_ToNDIMaster</title>
+  <meta name="keywords" content="getsynchWaveNIDAQ_mkt_ToNDIMaster">
+  <meta name="description" content="function getsynchWaveNIDAQ_mktToNDIMaster(daqFile,smpte_chn_NI,NDIsessionroot,smpte_chn_WAVE,session,sessfile, skiptrials,audiooffset)">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">NDIWAVES</a> &gt; getsynchWaveNIDAQ_mkt_ToNDIMaster.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for NDIWAVES&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>getsynchWaveNIDAQ_mkt_ToNDIMaster
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function getsynchWaveNIDAQ_mktToNDIMaster(daqFile,smpte_chn_NI,NDIsessionroot,smpte_chn_WAVE,session,sessfile, skiptrials,audiooffset)</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function getsynchWaveNIDAQ_mktToNDIMaster(NIDAQSmpteFile,recpathNIDAQ,NDIWaveSmpteFile,NDIsessionRoot,session,sessfile) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment">function getsynchWaveNIDAQ_mktToNDIMaster(daqFile,smpte_chn_NI,NDIsessionroot,smpte_chn_WAVE,session,sessfile, skiptrials,audiooffset)
+
+ Trial number might be incorrect
+ so far this is  a version for just one large DAQ file
+  smpte_chn_NI: channel on the NI daq file</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="NDIWaveParseSessionFile.html" class="code" title="function sesscfg=NDIWaveParseSessionFile(infile)">NDIWaveParseSessionFile</a>	sessionDir="C:\\ndigital\\collections"</li><li><a href="SMPTE_dec.html" class="code" title="function [TC, TCstr, E_per] = SMPTE_dec(smpte_audio,SR,fps,debug)">SMPTE_dec</a>	% SMPTE audio decoder v2.4</li><li><a href="hhmmssff2num.html" class="code" title="function num=hhmmssff2num(hhmmssff)">hhmmssff2num</a>	</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="../usertemplates/NDIsingle/do_getsynch_NDI.html" class="code" title="function do_getsynch_NDI">do_getsynch_NDI</a>	DO_GETSYNCH_NDI: Generate synch info from NDI/NIDAQ data structures</li></ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="#_sub1" class="code">functionname=[rmextension(mfilename),</a></li></ul>
+<h2><a name="_download"></a>DOWNLOAD <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<p><a href="getsynchWaveNIDAQ_mkt_ToNDIMaster.m">getsynchWaveNIDAQ_mkt_ToNDIMaster.m</a></p>
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">%function getsynchWaveNIDAQ_mktToNDIMaster(daqFile,smpte_chn_NI,NDIsessionroot,smpte_chn_WAVE,session,sessfile, skiptrials,audiooffset)</span>
+0002 <a name="_sub0" href="#_subfunctions" class="code">function getsynchWaveNIDAQ_mktToNDIMaster(NIDAQSmpteFile,recpathNIDAQ,NDIWaveSmpteFile,NDIsessionRoot,session,sessfile)</a>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% Trial number might be incorrect</span>
+0005 <span class="comment">% so far this is  a version for just one large DAQ file</span>
+0006 <span class="comment">%  smpte_chn_NI: channel on the NI daq file</span>
+0007 
+0008 namestr=<span class="string">''</span>;
+0009 
+0010 diaryname=[recpathNIDAQ rmextension(mfilename) <span class="string">'.log'</span>];
+0011 diary(diaryname);
+0012 
+0013 <a name="_sub1" href="#_subfunctions" class="code">functionname=[rmextension(mfilename), </a><span class="string">': Version 20-Oct-2011'</span>];
+0014 disp(functionname);
+0015 
+0016 private.sesscfg=<a href="NDIWaveParseSessionFile.html" class="code" title="function sesscfg=NDIWaveParseSessionFile(infile)">NDIWaveParseSessionFile</a>(sessfile);
+0017 
+0018 load(NIDAQSmpteFile);
+0019 load(NDIWaveSmpteFile);
+0020 
+0021 cutname=[NIDAQSmpteFile <span class="string">'_syncCh'</span>,num2str(smpte_chn_NI)];
+0022 disp([<span class="string">'using cutfile '</span> cutname]);
+0023 
+0024 NDIFirstFrames=cat(1,NDIWavRAW.smpteFirstFrame);
+0025 NDILastFrames=cat(1,NDIWavRAW.smpteLastFrame);
+0026 
+0027 NIFirstFrames=cat(1,NIDAQSmpteRaw.smpteFirstFrame);
+0028 NILastFrames=cat(1,NIDAQSmpteRaw.smpteLastFrame);
+0029 
+0030 [descriptor,unit,valuelabel]=cutstrucn;
+0031 
+0032 ndig=4;
+0033 
+0034 totalcuts=0;
+0035 maxCuts=20000;
+0036 data=nan(maxCuts,4);
+0037 data(:,3)=0;
+0038 
+0039 
+0040 <span class="comment">% The part of the code in the outer loop matches the trials</span>
+0041 <span class="comment">% This is a between trial problem resulting in the correct trial number</span>
+0042 <span class="comment">%</span>
+0043 
+0044 misslistindex=0;
+0045 
+0046 <span class="keyword">for</span> ll= 1:length(NDIWavRAW)
+0047 <span class="comment">% for ll=432:434</span>
+0048     
+0049     <span class="comment">% JJ=find(hhmmssff2num(NILastFrames(ll,1:4))-hhmmssff2num(NILastFrames(:,1:4))&gt;0);</span>
+0050 
+0051     <span class="comment">% KK:</span>
+0052     <span class="comment">% Fuer welche NI-Trials ist der erste NDI Synch-Sample des momentanen Trials SPAETER als der erste</span>
+0053     <span class="comment">% NIDAQ sample aller Trials?</span>
+0054     <span class="comment">% Das sollte beim ersten NDI-Trial fuer das erste Sample der Fall sein,</span>
+0055     <span class="comment">% beim zweiten NDI-Trial fuer die ersten beiden NI-Trials usw.</span>
+0056     <span class="comment">%</span>
+0057     KK=find(<a href="hhmmssff2num.html" class="code" title="function num=hhmmssff2num(hhmmssff)">hhmmssff2num</a>(NDIFirstFrames(ll,1:4))-<a href="hhmmssff2num.html" class="code" title="function num=hhmmssff2num(hhmmssff)">hhmmssff2num</a>(NIFirstFrames(:,1:4))&gt;0);
+0058     
+0059     <span class="comment">% JJ:</span>
+0060     <span class="comment">% Fuer welche NI-Trials ist der letzte Sample spaeter als der letzte</span>
+0061     <span class="comment">% NDI Sample des momentanen NDI-Trials?</span>
+0062     <span class="comment">% Das sollte erst mal alle sein, dann entsprechend weniger!</span>
+0063     <span class="comment">% Am Ende ist es jetzt ein &gt;=, damit man am Ende bei Codegleichheit</span>
+0064     <span class="comment">% noch was extrahieren kann. Moeglicherweise sollte man aehnliches bei</span>
+0065     <span class="comment">% der Berechnung von KK auch tun! To be seen.</span>
+0066     JJ=find(<a href="hhmmssff2num.html" class="code" title="function num=hhmmssff2num(hhmmssff)">hhmmssff2num</a>(NILastFrames(:,1:4)) - <a href="hhmmssff2num.html" class="code" title="function num=hhmmssff2num(hhmmssff)">hhmmssff2num</a>(NDILastFrames(ll,1:4)) &gt;=0);
+0067     
+0068     <span class="comment">% II:</span>
+0069     <span class="comment">% Die Intersection zwischen den beiden sollte eigentlich nur EINEN</span>
+0070     <span class="comment">% EINZIGEN TRIAL ergeben!</span>
+0071     <span class="comment">% Wenn mehr, dann ist was faul.</span>
+0072     
+0073     II=intersect(JJ,KK);
+0074 
+0075     
+0076     <span class="keyword">if</span> ~isempty(II)
+0077         IIold=II;
+0078         disp([<span class="string">'found '</span> num2str(length(II)) <span class="string">' trial(s).'</span>])
+0079         totalcuts=totalcuts+1;
+0080         disp([NDIsessionRoot session <span class="string">'/rawdata/'</span> NDIWavRAW(ll).name <span class="string">'  &lt;-&gt;  '</span> recpathNIDAQ  NIDAQSmpteRaw(II).name])
+0081         
+0082         <span class="comment">% extracting</span>
+0083         ssFile=[NDIsessionRoot session <span class="string">'/rawdata/'</span> NDIWavRAW(ll).name ];
+0084         [dataSYNCH,samplerate,NBITS]=wavread([ssFile]);
+0085         [smpteNDIWAVE smpteNDIWAVE_str,errN] = <a href="SMPTE_dec.html" class="code" title="function [TC, TCstr, E_per] = SMPTE_dec(smpte_audio,SR,fps,debug)">SMPTE_dec</a>(dataSYNCH(:,2),samplerate,25,0);
+0086         smpteNDIWAVEDur=smpteNDIWAVE(<span class="keyword">end</span>,end)-smpteNDIWAVE(1,end);
+0087         
+0088         
+0089         <span class="comment">%% NIDAQ</span>
+0090         
+0091         NIDAQ=load([recpathNIDAQ NIDAQSmpteRaw(II).name]);
+0092         <span class="comment">% [smpte_NI smpte_str_NI,errN_NI] = SMPTE_dec(NIDAQ.DAQData(:,smpte_chn_NI),NIDAQ.srate,25,0);</span>
+0093         soundout=soundsc_cg(NIDAQ.DAQData(:,smpte_chn_NI),NIDAQ.srate);
+0094         [smpte_NI smpte_str_NI,errN_NI] = <a href="SMPTE_dec.html" class="code" title="function [TC, TCstr, E_per] = SMPTE_dec(smpte_audio,SR,fps,debug)">SMPTE_dec</a>(soundout,NIDAQ.srate,25,0);
+0095         clear c, clear iNIDAQ, clear iWAVE;      
+0096         [c,iNIDAQ,iWAVE]=intersect(smpte_NI(:,1:4),smpteNDIWAVE(:,1:4),<span class="string">'rows'</span>);
+0097         
+0098         <span class="keyword">try</span>,
+0099             TStartNIDAQ=smpte_NI(iNIDAQ([1]),5)-smpteNDIWAVE(iWAVE([1]),5);
+0100             disp([<span class="string">'Offset into NI frame: '</span> num2str(round(TStartNIDAQ*1000)) <span class="string">'ms.'</span>])
+0101            
+0102             <span class="comment">% Endpoint of NI Sample - Use the duration of already synched wav-File to calculate NIDAQ-EOF:</span>
+0103             wavduration=length(dataSYNCH)/samplerate;
+0104             TEndNIDAQ=TStartNIDAQ+wavduration;
+0105             data(totalcuts,1)=TStartNIDAQ;
+0106             data(totalcuts,2)=TEndNIDAQ;
+0107             data(totalcuts,4)=II(end);
+0108             
+0109             myregexp=[<span class="string">'(\d{'</span> num2str(3) <span class="string">','</span> num2str(ndig) <span class="string">'}.wav)'</span>];
+0110             [startIndex, endIndex, tokIndex, matchStr, tokenStr, exprNames, splitStr] = regexp(NDIWavRAW(ll).name, myregexp);
+0111             [dum1,tmplabstr]=fileparts(char(matchStr));
+0112             
+0113             label(totalcuts,:)=tmplabstr;
+0114             <span class="comment">% label=int2str0vec(tmplabel');</span>
+0115             samplerate=NIDAQ.srate;
+0116             private.NIDAQ=NIDAQ.private;
+0117             
+0118             data(totalcuts+1:<span class="keyword">end</span>,:)=[];
+0119             disp([<span class="string">'start/end/duration of NI frame(s): '</span> num2str(TStartNIDAQ), <span class="string">'/'</span>, num2str(TEndNIDAQ) <span class="string">'/'</span> num2str(wavduration)]);
+0120             
+0121             eval ([<span class="string">'save '</span> cutname <span class="string">' data label descriptor unit comment valuelabel samplerate private'</span>]);
+0122         <span class="keyword">catch</span>
+0123             warning(lasterr)
+0124             disp(<span class="string">'problem in SMPTE code?'</span>)
+0125             disp([<span class="string">'NDI first/last: '</span> num2str(NDIFirstFrames(ll,1:4)) <span class="string">' - '</span> num2str(NDILastFrames(ll,1:4))])
+0126             keyboard
+0127         <span class="keyword">end</span>
+0128         clear TStartNIDAQ; TEndNIDAQ;  clear wavduration;
+0129     <span class="keyword">else</span>, 
+0130         msg=[<span class="string">'No intersection found for trial No. '</span> num2str(ll)  <span class="string">' in list, trial not processed'</span>];
+0131         warning(msg);
+0132         misslistindex=misslistindex+1;
+0133         misslist{misslistindex,1}=ll;
+0134         misslist{misslistindex,2}=msg;
+0135 <span class="comment">%         keyboard</span>
+0136     <span class="keyword">end</span>
+0137 <span class="keyword">end</span>
+0138 
+0139 
+0140 data(totalcuts+1:<span class="keyword">end</span>,:)=[];
+0141 I=find(data(:,4)==0);
+0142 data(I,:)=[];
+0143 label(I,:)=[];
+0144 
+0145 eval ([<span class="string">'save '</span> cutname <span class="string">' data label descriptor unit comment valuelabel samplerate private'</span>]);
+0146 
+0147 diary off
+0148 
+0149 <span class="keyword">return</span></pre></div>
+<hr><address>Generated on Wed 30-Jan-2013 17:04:26 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

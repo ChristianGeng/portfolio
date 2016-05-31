@@ -1,0 +1,125 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of wave_connect</title>
+  <meta name="keywords" content="wave_connect">
+  <meta name="description" content="WAVE_CONNECT --- establish socket connection to NDI RT Server">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">NDIWAVES</a> &gt; wave_connect.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for NDIWAVES&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>wave_connect
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>WAVE_CONNECT --- establish socket connection to NDI RT Server</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [s] = wave_connect (timeoutin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> WAVE_CONNECT --- establish socket connection to NDI RT Server 
+ 
+ Description: 
+   WAVE_CONNECT mimics the behavior of &quot;Client::bConnect&quot; which is part
+   of C3FRAME. (see test-serverclient.sln shipped by NDI). 
+   
+   a) open connection
+   b) set socket to blocking for the moment 
+       nSetSocketBlocking( m_socket, true );
+   c) turn off Nagle algorithm
+            nSetNagle( m_socket, false );
+ The Connection Function in RTC3DClient, Client::bConnect(DWORD dwAddress, int nPort)
+ in addition sets byteorder to &quot;default&quot;. We do not have do this here!
+ m_bNetworkByteOrder = true;
+
+ Syntax: 
+       timeout (optional)
+       s: Handle to socket connection
+
+ See also <a href="wave_negPackage.html" class="code" title="function [p] = wave_negPackage (s,q,averbose)">WAVE_NEGPACKAGE</a>, assembleStartRecordingPacket
+
+  $Date: 2011/10/04 17:35:51 $ CG</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="daqNItest.html" class="code" title="">daqNItest</a>	function daqNItest</li><li><a href="prompterNDI_NIDAQ.html" class="code" title="function prompterNDI_NIDAQ(stimfile,logfile,trial_duration,fontsize,aDaqNameCommon,startwav,endwav);">prompterNDI_NIDAQ</a>	prompterNDI_NIDAQ Prompt program for NDI wave system, also controlling</li><li><a href="prompterNDI_simple.html" class="code" title="function prompterNDI_simple(stimfile,logfile,trial_duration,fontsize,startwav,endwav,mysynchline);">prompterNDI_simple</a>	VERSION USING BUILT IN AUDIO CAPTURE</li><li><a href="prompter_NIDAQ.html" class="code" title="function prompterNDI_NIDAQ(stimfile,logfile,trial_duration,fontsize,aDaqNameCommon,startwav,endwav);">prompter_NIDAQ</a>	prompterNDI_NIDAQ Prompt program for NDI wave system, also controlling</li><li><a href="wave_helloWorld.html" class="code" title="">wave_helloWorld</a>	% need to close old sessions?</li></ul>
+<!-- crossreference -->
+
+
+<h2><a name="_download"></a>DOWNLOAD <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<p><a href="wave_connect.m">wave_connect.m</a></p>
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [s] = wave_connect (timeoutin)</a>
+0002 <span class="comment">% WAVE_CONNECT --- establish socket connection to NDI RT Server</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% Description:</span>
+0005 <span class="comment">%   WAVE_CONNECT mimics the behavior of &quot;Client::bConnect&quot; which is part</span>
+0006 <span class="comment">%   of C3FRAME. (see test-serverclient.sln shipped by NDI).</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">%   a) open connection</span>
+0009 <span class="comment">%   b) set socket to blocking for the moment</span>
+0010 <span class="comment">%       nSetSocketBlocking( m_socket, true );</span>
+0011 <span class="comment">%   c) turn off Nagle algorithm</span>
+0012 <span class="comment">%            nSetNagle( m_socket, false );</span>
+0013 <span class="comment">% The Connection Function in RTC3DClient, Client::bConnect(DWORD dwAddress, int nPort)</span>
+0014 <span class="comment">% in addition sets byteorder to &quot;default&quot;. We do not have do this here!</span>
+0015 <span class="comment">% m_bNetworkByteOrder = true;</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">% Syntax:</span>
+0018 <span class="comment">%       timeout (optional)</span>
+0019 <span class="comment">%       s: Handle to socket connection</span>
+0020 <span class="comment">%</span>
+0021 <span class="comment">% See also WAVE_NEGPACKAGE, assembleStartRecordingPacket</span>
+0022 <span class="comment">%</span>
+0023 <span class="comment">%  $Date: 2011/10/04 17:35:51 $ CG</span>
+0024 <span class="comment">%</span>
+0025 
+0026 
+0027 import java.io.*;
+0028 import java.net.*;
+0029 import java.lang.String;
+0030 import java.io.InputStream;
+0031 
+0032 timeout=2000;    <span class="comment">%possibly higher value sometimes useful to prevent apparent lost connection?</span>
+0033 <span class="keyword">if</span> nargin
+0034     timeout=timeoutin; 
+0035 <span class="keyword">end</span>;
+0036 
+0037 clear s;
+0038 
+0039 <span class="comment">% hardwired:</span>
+0040 ip=<span class="string">'141.89.97.193'</span>;
+0041 port=3030;
+0042 
+0043 <span class="comment">% a) Open Connection</span>
+0044 s=Socket(ip,port);
+0045 
+0046 <span class="comment">% b) auf Blocking setzen</span>
+0047 s.setSoTimeout(timeout);
+0048 
+0049 <span class="comment">% c)  Nagling off</span>
+0050 <span class="comment">% This means that there are no TCP buffer flushing delays</span>
+0051 s.setTcpNoDelay(false);
+0052 <span class="comment">%Die Option tcpnodelay gibt an, ob kleine Transaktionen an den Server gesendet werden,</span>
+0053 <span class="comment">%ohne sie vorher in einen Buffer zu stellen. Eine &quot;kleine Transaktion&quot; ist kleiner als der</span>
+0054 <span class="comment">%in der Option txnbytelimit definierte Bytegrenzwert. Die Angabe tcpnodelay yes kann die</span>
+0055 <span class="comment">%Leistung in Netzen mit hoher �ertragungsgeschwindigkeit verbessern.</span>
+0056</pre></div>
+<hr><address>Generated on Wed 30-Jan-2013 17:04:26 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

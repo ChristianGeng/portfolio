@@ -1,0 +1,964 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of prompterNDI_NIDAQ</title>
+  <meta name="keywords" content="prompterNDI_NIDAQ">
+  <meta name="description" content="prompterNDI_NIDAQ Prompt program for NDI wave system, also controlling">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">NDIWAVES</a> &gt; prompterNDI_NIDAQ.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for NDIWAVES&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>prompterNDI_NIDAQ
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>prompterNDI_NIDAQ Prompt program for NDI wave system, also controlling</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function prompterNDI_NIDAQ(stimfile,logfile,trial_duration,fontsize,aDaqNameCommon,startwav,endwav); </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> prompterNDI_NIDAQ Prompt program for NDI wave system, also controlling
+ NIDAQ compact DAQ card 
+ function prompterNDI(stimfile,logfile,trial_duration,fontsize,startwav,endwav,mysynchline);
+ prompter_parallel: Version 09.10.11
+
+    Syntax
+        fontsize: Size of font for stimulus display to subject. Given in
+            normalized units
+        trial_duration: in s. If empty, stop interactively (key press)
+        startwav and endwav (optional). WAV files played at start and end, respectively
+                could be just a bell, but could also be e.g a synch
+                inpulse.
+        mysynchline: Optional, default to 8. Specifies the output line of
+            the parallel port to use for synch signal.
+            Set to 8 if using the additional connection on the special box used
+            at Munich to connect the parallel port input to the AG500 and the output to the VTG55
+            video timer.
+            Set to 1 if using a cable like that used for synch output from Phil's version
+            of the AG100 software
+
+   Description
+       Outputs synch signal to parallel port at start of trial.
+       Simple version of prompter_parallel_trigin, without video timer
+       control and monitoring of AG500 status
+       This version can be used when daq toolbox access to parallel port
+       not available.
+       Thus also useful for testing integrity of prompt files before
+       experiment because it can be run when parallel port in not
+       accessible (this requires administrator privileges on Windows XP
+       It is intended that this program will eventually be merged with
+       prompter_parallel_trigin etc.
+        See prompter_parallel_trigin or prompter_parallel_trigag for more
+        up-to-date help.
+       Note: unlike prompter_parallel_trigin etc. this version has no code
+       for optional handling of vt220 serial terminal
+
+   See Also PROMPTER_PARALLEL_TRIGIN, PROMPTER_PARALLEL_TRIGAG
+
+    Updates
+        10.10 synchline made configurable. 'comment' command works as in
+        prompter_parallel_trigin etc.
+       08.11 Add userstart/stop functions (see source code for details)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="dataaq.html" class="code" title="function [lh]=dataaq(src,event)">dataaq</a>	</li><li><a href="wave_assembleStartRecordingPacket.html" class="code" title="function p=wave_assembleStartRecordingPacket(startStop)">wave_assembleStartRecordingPacket</a>	ASSEMBLESTARTRECORDINGPACKET --- generate the command that starts/stops</li><li><a href="wave_connect.html" class="code" title="function [s] = wave_connect (timeoutin)">wave_connect</a>	WAVE_CONNECT --- establish socket connection to NDI RT Server</li><li><a href="wave_negPackage.html" class="code" title="function [p] = wave_negPackage (s,q,averbose)">wave_negPackage</a>	WAVE_NEGPACKAGE - negotiate NDI wave packages with the NDI RT server.</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="#_sub1" class="code">functionname=</a></li><li><a href="#_sub2" class="code">function showg(ht,mys);</a></li><li><a href="#_sub3" class="code">function updatefigs</a></li><li><a href="#_sub4" class="code">function dotrafficlights(tlcol,ht,figh);</a></li><li><a href="#_sub5" class="code">function showhelp</a></li></ul>
+<h2><a name="_download"></a>DOWNLOAD <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<p><a href="prompterNDI_NIDAQ.m">prompterNDI_NIDAQ.m</a></p>
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function prompterNDI_NIDAQ(stimfile,logfile,trial_duration,fontsize,aDaqNameCommon,startwav,endwav);</a>
+0002 <span class="comment">% prompterNDI_NIDAQ Prompt program for NDI wave system, also controlling</span>
+0003 <span class="comment">% NIDAQ compact DAQ card</span>
+0004 <span class="comment">% function prompterNDI(stimfile,logfile,trial_duration,fontsize,startwav,endwav,mysynchline);</span>
+0005 <span class="comment">% prompter_parallel: Version 09.10.11</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">%    Syntax</span>
+0008 <span class="comment">%        fontsize: Size of font for stimulus display to subject. Given in</span>
+0009 <span class="comment">%            normalized units</span>
+0010 <span class="comment">%        trial_duration: in s. If empty, stop interactively (key press)</span>
+0011 <span class="comment">%        startwav and endwav (optional). WAV files played at start and end, respectively</span>
+0012 <span class="comment">%                could be just a bell, but could also be e.g a synch</span>
+0013 <span class="comment">%                inpulse.</span>
+0014 <span class="comment">%        mysynchline: Optional, default to 8. Specifies the output line of</span>
+0015 <span class="comment">%            the parallel port to use for synch signal.</span>
+0016 <span class="comment">%            Set to 8 if using the additional connection on the special box used</span>
+0017 <span class="comment">%            at Munich to connect the parallel port input to the AG500 and the output to the VTG55</span>
+0018 <span class="comment">%            video timer.</span>
+0019 <span class="comment">%            Set to 1 if using a cable like that used for synch output from Phil's version</span>
+0020 <span class="comment">%            of the AG100 software</span>
+0021 <span class="comment">%</span>
+0022 <span class="comment">%   Description</span>
+0023 <span class="comment">%       Outputs synch signal to parallel port at start of trial.</span>
+0024 <span class="comment">%       Simple version of prompter_parallel_trigin, without video timer</span>
+0025 <span class="comment">%       control and monitoring of AG500 status</span>
+0026 <span class="comment">%       This version can be used when daq toolbox access to parallel port</span>
+0027 <span class="comment">%       not available.</span>
+0028 <span class="comment">%       Thus also useful for testing integrity of prompt files before</span>
+0029 <span class="comment">%       experiment because it can be run when parallel port in not</span>
+0030 <span class="comment">%       accessible (this requires administrator privileges on Windows XP</span>
+0031 <span class="comment">%       It is intended that this program will eventually be merged with</span>
+0032 <span class="comment">%       prompter_parallel_trigin etc.</span>
+0033 <span class="comment">%        See prompter_parallel_trigin or prompter_parallel_trigag for more</span>
+0034 <span class="comment">%        up-to-date help.</span>
+0035 <span class="comment">%       Note: unlike prompter_parallel_trigin etc. this version has no code</span>
+0036 <span class="comment">%       for optional handling of vt220 serial terminal</span>
+0037 <span class="comment">%</span>
+0038 <span class="comment">%   See Also PROMPTER_PARALLEL_TRIGIN, PROMPTER_PARALLEL_TRIGAG</span>
+0039 <span class="comment">%</span>
+0040 <span class="comment">%    Updates</span>
+0041 <span class="comment">%        10.10 synchline made configurable. 'comment' command works as in</span>
+0042 <span class="comment">%        prompter_parallel_trigin etc.</span>
+0043 <span class="comment">%       08.11 Add userstart/stop functions (see source code for details)</span>
+0044 
+0045 <a name="_sub1" href="#_subfunctions" class="code">functionname=</a><span class="string">'PROMPTER_PARALLEL: Version 21.08.2011'</span>;
+0046 
+0047 <span class="keyword">global</span> DAQData srate nSampsAcquired datsize nchan unit NIsession private daqOutFile axYlims
+0048 
+0049 
+0050 philcom(1)
+0051 imageprefix=<span class="string">'&lt;IMAGE&gt;'</span>;
+0052 
+0053 <span class="comment">%synchline=8;        %compatible with vtgctrl (otherwise use 1)</span>
+0054 <span class="comment">%synchline=1;</span>
+0055 
+0056 
+0057 
+0058 wavlist=[];
+0059 wavlistsynch=0;        <span class="comment">%12.09</span>
+0060 
+0061 <span class="comment">%matlab commands, or script or function file, to be executed at start and</span>
+0062 <span class="comment">%end of trial (i.e the string specified here is passed to the eval</span>
+0063 <span class="comment">%function)</span>
+0064 <span class="comment">%Using a function is preferable, to reduce chances of inadvertently</span>
+0065 <span class="comment">%changing program variables</span>
+0066 <span class="comment">%This mechanism could be used as an alternative way of handling audio</span>
+0067 <span class="comment">%output depending on current stimulus. Should mainly be useful for</span>
+0068 <span class="comment">%modifying the prompt display in various ways.</span>
+0069 <span class="comment">%could also be used to enforce a minimum 'getready' duration.</span>
+0070 
+0071 userstopfunc=<span class="string">''</span>; <span class="comment">%called at end of trial, just before new stimulus is displayed (so e.g could be used to make</span>
+0072 <span class="comment">%stimulus invisible until the next 'next' command</span>
+0073 userstartfunc=<span class="string">''</span>; <span class="comment">%called during the next command, before start of trial. Specifically, after any audio</span>
+0074 <span class="comment">%output specified in wavlist has been done.</span>
+0075 <span class="comment">% In prompter_parallel_trigag it is called before the signal to the AG500</span>
+0076 <span class="comment">% control server to start the trial</span>
+0077 <span class="comment">% In prompter_parallel_trigin it is called before the program waits for the</span>
+0078 <span class="comment">% attention signal.</span>
+0079 <span class="comment">% Future versions for ag500 control may include separate functions linked</span>
+0080 <span class="comment">% to the attention and sweep signals</span>
+0081 
+0082 
+0083 
+0084 <span class="comment">%</span>
+0085 <span class="comment">% daqok=1;</span>
+0086 <span class="comment">% try</span>
+0087 <span class="comment">%     parport = digitalio('parallel','LPT1');</span>
+0088 <span class="comment">%     lines_OUT_1 = addline(parport,[0:7],0,'out');</span>
+0089 <span class="comment">%</span>
+0090 <span class="comment">%     putvalue(parport.Line(synchline),0);</span>
+0091 <span class="comment">% catch</span>
+0092 <span class="comment">%     disp('parallel port not available, try logging in as administrator');</span>
+0093 <span class="comment">%     daqok=0;</span>
+0094 <span class="comment">% end;</span>
+0095 
+0096 
+0097 [abint,abnoint,abscalar,abnoscalar]=abartdef;
+0098 
+0099 wavstart=[];
+0100 <span class="keyword">if</span> nargin&gt;5
+0101     wavstart=startwav;
+0102     <span class="keyword">if</span> ~isempty(wavstart)
+0103         [wavstart_d,wavstart_sf,wavstart_bits]=wavread(wavstart);
+0104         playerStart = audioplayer(wavstart_d,wavstart_sf);
+0105     <span class="keyword">end</span>;
+0106 <span class="keyword">end</span>;
+0107 
+0108 wavend=[];
+0109 <span class="keyword">if</span> nargin&gt;6
+0110     wavend=endwav;
+0111     
+0112     <span class="keyword">if</span> ~isempty(wavend)
+0113         [wavend_d,wavend_sf,wavend_bits]=wavread(wavstart);
+0114         playerEnd = audioplayer(wavend_d,wavend_sf);
+0115     <span class="keyword">end</span>;
+0116 <span class="keyword">end</span>;
+0117 
+0118 <span class="comment">% prepare COMPACTDAQ</span>
+0119 daqNameCommon=<span class="string">'daqdat_'</span>;
+0120 <span class="keyword">if</span> nargin&gt;4
+0121  daqNameCommon=aDaqNameCommon;
+0122 <span class="keyword">end</span>
+0123 
+0124 
+0125 <span class="comment">%% SETUP DAQ</span>
+0126 disp(<span class="string">'DAQ initialization ...'</span>)
+0127 
+0128 hfDAQ=figure(<span class="string">'Tag'</span>,<span class="string">'hfDAQ'</span>);
+0129 subplot(2,1,1)
+0130 <span class="comment">% set(gca,'Ylim',[-5 5])</span>
+0131 subplot(2,1,2)
+0132 <span class="comment">% set(gca,'Ylim',[-5 5])</span>
+0133 
+0134 daqdatindex=0; 
+0135 <span class="comment">%daqOutFile=[daqNameCommon int2str0vec(daqdatindex)];</span>
+0136 
+0137 daqreset
+0138 vendor=daq.getVendors;
+0139 
+0140 NIsession = daq.createSession (vendor.ID);
+0141 nchanNI9234=2;
+0142 nchan9215=0;
+0143 srate=25600;
+0144 <span class="comment">%srate=51200;</span>
+0145 
+0146 <span class="comment">%set(NIsession,'DurationInSeconds',nsecs)</span>
+0147 set(NIsession,<span class="string">'IsContinuous'</span>,1);
+0148 notifyWhenExceedsSamps=srate/10;
+0149 set(NIsession,<span class="string">'NotifyWhenDataAvailableExceeds'</span>,notifyWhenExceedsSamps);
+0150  <span class="comment">%2560</span>
+0151 devs=daq.getDevices;
+0152 
+0153 [channels,indexes]=NIsession.addAnalogInputChannel(devs(1).ID,0:nchanNI9234-1,<span class="string">'voltage'</span>);
+0154 <span class="comment">%[channelsM2,indexesM2]=NIsession.addAnalogInputChannel(devs(2).ID,0:nchan9215-1,'voltage')</span>
+0155 <span class="comment">%set(channels,'Name',str2mat('Synch NDI Wave', 'Audio Participant'));</span>
+0156 set(channels(1),<span class="string">'Name'</span>,str2mat(<span class="string">'Synch NDI Wave'</span>))
+0157 set(channels(2),<span class="string">'Name'</span>,str2mat(<span class="string">'Audio Participant'</span>))
+0158 axYlims{1}=[-0.1 0.1]
+0159 axYlims{2}=[-5 5]
+0160 
+0161 
+0162 <span class="comment">%NIsession.removeChannel(1)</span>
+0163 set(NIsession,<span class="string">'Rate'</span>,srate)
+0164 [lh]=NIsession.addlistener(<span class="string">'DataAvailable'</span>, @<a href="dataaq.html" class="code" title="function [lh]=dataaq(src,event)">dataaq</a>);
+0165 
+0166 <span class="comment">%NIsession.addlistener('ErrorOccurred', @devicewarn);</span>
+0167 <span class="comment">% function devicewarn(src,event)</span>
+0168 
+0169 NIChannels=get(NIsession,<span class="string">'Channels'</span>); 
+0170 NIChanProps=get(NIChannels);
+0171 nchan=length(NIChanProps);
+0172 
+0173 private.devs=get(devs);
+0174 private.NISession=get(NIsession);
+0175 private.channels=get(channels);
+0176 private.vendor=get(vendor);
+0177 unit=cat(1,private.channels.MeasurementType);
+0178 
+0179 mymem=memory;
+0180 nbytes=8; <span class="comment">% DAQ data are 32bit long</span>
+0181 <span class="comment">%nsecs=3600*3; %% Allocate 3h of data ...</span>
+0182 <span class="comment">%nsecs=800; %% allocate space for measurement data ...</span>
+0183 nsecs=floor(mymem.MaxPossibleArrayBytes/(nchan*nbytes*srate));
+0184 disp([<span class="string">'There is space for '</span> num2str(nsecs/3600) <span class="string">'h of data!'</span>]);
+0185 <span class="comment">%nsecs=2600; % das geht noch (3/4 Stunde)</span>
+0186 nsecs=240;
+0187 datsize=nsecs*srate;
+0188 
+0189 disp(<span class="string">'Socket initialization ...'</span>)
+0190 [s] = <a href="wave_connect.html" class="code" title="function [s] = wave_connect (timeoutin)">wave_connect</a>(2900)
+0191 <span class="comment">%s.getSoTimeout</span>
+0192 
+0193 q.data=<span class="string">'Version 1.0'</span>;
+0194 q.type=1;
+0195 p = <a href="wave_negPackage.html" class="code" title="function [p] = wave_negPackage (s,q,averbose)">wave_negPackage</a> (s,q);
+0196 disp(char(p.data'))
+0197 
+0198 <span class="comment">% cString = 'SetByteOrder LittleEndian' 'false'</span>
+0199 q.data=<span class="string">'SetByteOrder LittleEndian'</span>;
+0200 q.type=1;
+0201 p = <a href="wave_negPackage.html" class="code" title="function [p] = wave_negPackage (s,q,averbose)">wave_negPackage</a> (s,q);
+0202 
+0203 disp(char(p.data'));
+0204 <span class="comment">% vieilleicht bessere Latenz??</span>
+0205 s.setTcpNoDelay(true)
+0206 
+0207 qStart=<a href="wave_assembleStartRecordingPacket.html" class="code" title="function p=wave_assembleStartRecordingPacket(startStop)">wave_assembleStartRecordingPacket</a>;
+0208 qStop=<a href="wave_assembleStartRecordingPacket.html" class="code" title="function p=wave_assembleStartRecordingPacket(startStop)">wave_assembleStartRecordingPacket</a>(0);
+0209 
+0210 <span class="comment">%if true, program continues without waiting for end of sound</span>
+0211 wavstart_async=0;
+0212 wavend_async=0;
+0213 
+0214 [ps,cs,s1line,nstim,nline,prepareimage,maxcol]=parsestimfile(stimfile);
+0215 
+0216 helpwin prompter_parallel;
+0217 
+0218 helpwin(s1line,stimfile);
+0219 
+0220 
+0221 fid=fopen(logfile,<span class="string">'w'</span>);
+0222 <span class="keyword">if</span> fid&lt;3
+0223     disp(<span class="string">'unable to open log file'</span>);
+0224     <span class="keyword">return</span>
+0225 <span class="keyword">end</span>;
+0226 ts=[<span class="string">'&lt;'</span> <a name="_sub2" href="#_subfunctions" class="code">functionname </a><span class="string">'&gt;'</span> crlf];
+0227 status=fwrite(fid,ts,<span class="string">'uchar'</span>);
+0228 <span class="keyword">if</span> status~=length(ts)
+0229     disp(<span class="string">'Problem writing to log file'</span>);
+0230     fclose(fid);
+0231     <span class="keyword">return</span>;
+0232 <span class="keyword">end</span>;
+0233 
+0234 
+0235 hfsub=figure;
+0236 set(hfsub,<span class="string">'color'</span>,<span class="string">'w'</span>);
+0237 set(hfsub,<span class="string">'menu'</span>,<span class="string">'none'</span>);
+0238 haxp=axes;
+0239 xlim([0 1]);
+0240 ylim([0 1]);
+0241 set(gca,<span class="string">'visible'</span>,<span class="string">'off'</span>);
+0242 set(gca,<span class="string">'position'</span>,[0.05 0.05 0.9 0.9]);
+0243 
+0244 ht=text(0.5,0.5,<span class="string">'***'</span>,<span class="string">'horizontalalignment'</span>,<span class="string">'left'</span>,<span class="string">'verticalalignment'</span>,<span class="string">'middle'</span>);
+0245 set(ht,<span class="string">'fontunits'</span>,<span class="string">'normalized'</span>,<span class="string">'fontsize'</span>,fontsize,<span class="string">'userdata'</span>,fontsize,<span class="string">'tag'</span>,<span class="string">'prompt'</span>);
+0246 
+0247 set(ht,<span class="string">'edgecolor'</span>,<span class="string">'r'</span>,<span class="string">'linewidth'</span>,5,<span class="string">'margin'</span>,15);
+0248 
+0249 haxsub=gca;
+0250 set(hfsub,<span class="string">'name'</span>,<span class="string">'Subject'</span>);
+0251 
+0252 haxi=[];
+0253 <span class="comment">%vi=strmatch(imageprefix,ps);</span>
+0254 <span class="comment">%if ~isempty(vi)</span>
+0255 <span class="keyword">if</span> prepareimage
+0256     disp(<span class="string">'preparing for image data'</span>);
+0257     haxi=axes;
+0258     set(haxi,<span class="string">'position'</span>,get(haxp,<span class="string">'position'</span>));
+0259     set(haxi,<span class="string">'tag'</span>,imageprefix);
+0260     hi=image;
+0261     set(hi,<span class="string">'tag'</span>,imageprefix);
+0262     <span class="comment">%make sure axis ticks and labels are not visible when axes is visible</span>
+0263     <span class="comment">%but see note below</span>
+0264     set(haxi,<span class="string">'ycolor'</span>,get(hfsub,<span class="string">'color'</span>),<span class="string">'xcolor'</span>,get(hfsub,<span class="string">'color'</span>));
+0265     <span class="comment">%7.10 use axes rather than figure color to cue the subject</span>
+0266     set(haxi,<span class="string">'color'</span>,<span class="string">'r'</span>,<span class="string">'linewidth'</span>,10);
+0267     set(haxi,<span class="string">'visible'</span>,<span class="string">'off'</span>);
+0268     set(hi,<span class="string">'visible'</span>,<span class="string">'on'</span>);
+0269     
+0270     disp(<span class="string">'load image data'</span>);
+0271     <span class="comment">%the loading script could show one image to allow size to be checked</span>
+0272     <span class="comment">%and should then normally set axis image or axis equal (not sure</span>
+0273     <span class="comment">%what happens with axis image if image size varies)</span>
+0274     <span class="comment">%But for the normal case of same-size images then axis image is better.</span>
+0275     <span class="comment">%(axis equal will leave additional strips in the axis color with size</span>
+0276     <span class="comment">%depending on precise image dimensions, - and also little notches in the</span>
+0277     <span class="comment">%background color at the tick location (can be fixed with e.g</span>
+0278     <span class="comment">%set(haxi,'xtick',[]);</span>
+0279     <span class="comment">%example for the loading script:</span>
+0280     <span class="comment">%===========================</span>
+0281     <span class="comment">%set(haxi,'userdata',mymatin('mca6_medgem_images','data'));</span>
+0282     
+0283     <span class="comment">%assume monochrome image (not stored as truecolor)</span>
+0284     <span class="comment">%if data still stored as logical use this:</span>
+0285     <span class="comment">%set(get(haxi,'parent'),'colormap',gray(2));</span>
+0286     <span class="comment">%otherwise if resized and antialiased, use this:</span>
+0287     <span class="comment">%set(get(haxi,'parent'),'colormap',gray(256));</span>
+0288     <span class="comment">%tmpxx=get(haxi,'userdata');</span>
+0289     <span class="comment">%tmpxx=tmpxx{1};</span>
+0290     <span class="comment">%set(hi,'cdata',tmpxx);</span>
+0291     <span class="comment">%axis(haxi,'image');</span>
+0292     <span class="comment">%clear tmpxx;</span>
+0293     <span class="comment">%===============================</span>
+0294     
+0295     keyboard;
+0296     set(hi,<span class="string">'visible'</span>,<span class="string">'off'</span>);
+0297     
+0298 <span class="keyword">end</span>;
+0299 
+0300 hfinv=[];
+0301     hfinv=figure;
+0302     set(hfinv,<span class="string">'color'</span>,get(hfsub,<span class="string">'color'</span>));
+0303     set(hfinv,<span class="string">'menu'</span>,<span class="string">'none'</span>);
+0304     set(hfinv,<span class="string">'colormap'</span>,get(hfsub,<span class="string">'colormap'</span>));    <span class="comment">%ensure colormaps are same, especially for image mode</span>
+0305     
+0306     copyobj([haxsub haxi],hfinv);
+0307     ht(2)=findobj(hfinv,<span class="string">'type'</span>,<span class="string">'text'</span>,<span class="string">'tag'</span>,<span class="string">'prompt'</span>);
+0308     set(hfinv,<span class="string">'name'</span>,<span class="string">'Investigator'</span>);
+0309     <span class="comment">%show trial number and current time in investigator prompt window</span>
+0310     <span class="comment">%make axes a bit smaller to give room for text above</span>
+0311     haxinv=findobj(hfinv,<span class="string">'type'</span>,<span class="string">'axes'</span>);
+0312     mypos=get(haxinv(1),<span class="string">'position'</span>);
+0313     mypos(1:2)=[0.05 0.01];
+0314     mynewsize=mypos(3:4)*0.85;        <span class="comment">%factor will depend on how many lines of text</span>
+0315     mypos(3:4)=mynewsize;
+0316     set(haxinv,<span class="string">'position'</span>,mypos);
+0317     htinfo(1)=text(0,1.12+0.02,<span class="string">' '</span>,<span class="string">'fontweight'</span>,<span class="string">'bold'</span>,<span class="string">'fontunits'</span>,<span class="string">'normalized'</span>,<span class="string">'verticalalignment'</span>,<span class="string">'bottom'</span>);
+0318     htinfo(2)=text(0,1.02,<span class="string">' '</span>,<span class="string">'fontweight'</span>,<span class="string">'bold'</span>,<span class="string">'fontunits'</span>,<span class="string">'normalized'</span>,<span class="string">'verticalalignment'</span>,<span class="string">'bottom'</span>,<span class="string">'interpreter'</span>,<span class="string">'none'</span>);
+0319     set(htinfo,<span class="string">'fontsize'</span>,0.1,<span class="string">'erasemode'</span>,<span class="string">'xor'</span>);
+0320     set(hfinv,<span class="string">'doublebuffer'</span>,<span class="string">'on'</span>);
+0321     
+0322     <span class="comment">%could be used to indicate stopped/running if normal traffic lights are not</span>
+0323     <span class="comment">%used for this (or if not visible on video)</span>
+0324     htinforuncol=<span class="string">'k'</span>;
+0325     htinfostopcol=<span class="string">'k'</span>;
+0326     
+0327 
+0328 figh=[hfsub hfinv];
+0329 
+0330 
+0331 P.figurebasecolor=get(hfsub,<span class="string">'color'</span>);
+0332 P.promptmode=<span class="string">'text'</span>;
+0333 P.imageprefix=imageprefix;
+0334 set(hfsub,<span class="string">'userdata'</span>,P);
+0335 
+0336 
+0337 <span class="comment">%colors for signal to subject</span>
+0338 <span class="comment">%normal colours</span>
+0339 TL.stop=[1 0 0];
+0340 TL.go=[0.1 0.8 0.1];
+0341 TL.getready=[1 1 0];
+0342 
+0343 <span class="comment">%no change in colours</span>
+0344 <span class="comment">%TL.stop=[0 0 0];</span>
+0345 <span class="comment">%TL.go=[0 0 0];</span>
+0346 <span class="comment">%TL.getready=[0 0 0];</span>
+0347 
+0348 
+0349 
+0350 
+0351 <span class="comment">%can also adjust text properties, traffic light colours  etc. by hand</span>
+0352 <span class="comment">%can also adjust text properties, traffic light colours etc. by hand</span>
+0353 disp(<span class="string">'Position Subject, Investigator and Help figures, then type return'</span>);
+0354 disp(<span class="string">'(Optionally adjust other settings)'</span>);
+0355 keyboard;
+0356 
+0357 <a href="#_sub4" class="code" title="subfunction dotrafficlights(tlcol,ht,figh);">dotrafficlights</a>(TL.stop,ht,figh);
+0358 
+0359 drawnow;
+0360 <a href="#_sub3" class="code" title="subfunction updatefigs">updatefigs</a>;
+0361 <span class="comment">%set(gcf,'menu','none')</span>
+0362 
+0363 all_done=0;
+0364 irun=1;
+0365 <a href="#_sub5" class="code" title="subfunction showhelp">showhelp</a>;
+0366 
+0367 <span class="keyword">while</span> ~all_done
+0368     ts=datestr(now);
+0369     ts=[<span class="string">'&lt;Start of Sequence&gt; '</span> ts crlf];
+0370     status=fwrite(fid,ts,<span class="string">'uchar'</span>);
+0371     <a href="#_sub2" class="code" title="subfunction showg(ht,mys);">showg</a>(ht,<span class="string">'\fontname{Helvetica}!New Sequence!'</span>);
+0372     <span class="comment">%   showg(ht,str2mat('!new!','!sequence!'));</span>
+0373     disp(<span class="string">'Starting prompt sequence'</span>);
+0374     disp(<span class="string">'hit any key to continue'</span>);
+0375     pause;
+0376     
+0377     istim=1;
+0378     repeatstr=<span class="string">''</span>;
+0379     rubbishstr=<span class="string">''</span>;
+0380     <a href="#_sub2" class="code" title="subfunction showg(ht,mys);">showg</a>(ht,ps{istim});
+0381     <span class="comment">%   set(ht,'color','r');</span>
+0382     
+0383     <a href="#_sub4" class="code" title="subfunction dotrafficlights(tlcol,ht,figh);">dotrafficlights</a>(TL.stop,ht,figh);
+0384     
+0385     <span class="comment">%set(ht,'edgecolor','r');</span>
+0386     <a href="#_sub3" class="code" title="subfunction updatefigs">updatefigs</a>;
+0387     disp(ps{istim});
+0388     disp([<span class="string">'&lt;CODE&gt; '</span> cs{istim}]);
+0389     set(htinfo(2),<span class="string">'string'</span>,[int2str(istim) <span class="string">' : '</span> cs{istim}]);
+0390     finished=0;
+0391     freecomment=<span class="string">'%['</span>;
+0392     
+0393     <span class="keyword">while</span> ~finished
+0394         mycmd=abartstr(<span class="string">'Command: '</span>,<span class="string">'n'</span>);
+0395         <span class="comment">%      mycmd=lower(mycmd);</span>
+0396         <span class="keyword">if</span> mycmd==<span class="string">'h'</span> <a href="#_sub5" class="code" title="subfunction showhelp">showhelp</a>; <span class="keyword">end</span>;
+0397         
+0398         <span class="keyword">if</span> mycmd==<span class="string">'n'</span>
+0399             <span class="comment">%dotrafficlights(TL.getready,ht,figh);</span>
+0400             
+0401             <span class="comment">%drawnow;</span>
+0402             
+0403             <span class="comment">%use mysound????, what about scaling????</span>
+0404             <span class="comment">%audio output from list here</span>
+0405             <span class="keyword">if</span> ~isempty(wavlist)
+0406                 <span class="keyword">try</span>
+0407                     tmpname=deblank(wavlist(istim,:));
+0408                     [audioprompt,audiopromptsf]=wavread(tmpname);
+0409                     sound(audioprompt,audiopromptsf,16);
+0410                     <span class="keyword">if</span> wavlistsynch pause(length(audioprompt)/audiopromptsf); <span class="keyword">end</span>;
+0411                     
+0412                 <span class="keyword">catch</span>
+0413                     disp(<span class="string">'problem playing audio'</span>);
+0414                 <span class="keyword">end</span>;
+0415             <span class="keyword">end</span>;
+0416             
+0417             <span class="keyword">if</span> ~isempty(userstartfunc)
+0418                 eval(userstartfunc,<span class="string">'disp(''Error evaluating userstartfunc'');disp(lasterr)'</span>);
+0419             <span class="keyword">end</span>;
+0420             
+0421             
+0422             <span class="comment">%finish off last comment</span>
+0423             status=fwrite(fid,[rubbishstr freecomment <span class="string">']'</span> crlf],<span class="string">'uchar'</span>);
+0424             freecomment=<span class="string">''</span>;
+0425             rubbishstr=<span class="string">''</span>;
+0426             
+0427             iruns=int2str(irun);
+0428             set(htinfo(1),<span class="string">'string'</span>,iruns,<span class="string">'color'</span>,htinfostopcol);
+0429             drawnow;
+0430             sx=int2str([irun istim]);
+0431             
+0432             
+0433             
+0434             
+0435             disp([<span class="string">'Recording '</span> int2str([irun istim])]);
+0436             
+0437             
+0438             <span class="comment">% Start Recording</span>
+0439             DAQData=zeros(datsize,nchan);
+0440             <span class="comment">%pack</span>
+0441             nSampsAcquired=0;
+0442             disp(<span class="string">'Starting NIDAQ aquisition'</span>);
+0443             daqdatindex=daqdatindex+1; 
+0444             daqOutFile=[daqNameCommon int2str0vec(daqdatindex)];
+0445 
+0446             NIsession.startBackground;
+0447             <span class="comment">%pause(0.1)</span>
+0448 
+0449             <span class="comment">% Start the NDI System:</span>
+0450             p = <a href="wave_negPackage.html" class="code" title="function [p] = wave_negPackage (s,q,averbose)">wave_negPackage</a> (s,qStart);
+0451 
+0452             
+0453             <span class="keyword">if</span> ~isempty(wavstart)
+0454 <span class="comment">%                 soundsc(wavstart_d,wavstart_sf,wavstart_bits);</span>
+0455                 playerStart.play;
+0456                 <span class="keyword">if</span> ~wavstart_async
+0457                     tmppause=length(wavstart_d)/wavstart_sf;
+0458                     pause(tmppause);
+0459                 <span class="keyword">end</span>;
+0460             <span class="keyword">end</span>;
+0461             
+0462             
+0463             
+0464             
+0465             mytime=now;
+0466             <span class="comment">%         set(ht,'color',[0.1 0.8 0.1]);</span>
+0467             <span class="comment">%         set(ht,'edgecolor','g');</span>
+0468             <a href="#_sub4" class="code" title="subfunction dotrafficlights(tlcol,ht,figh);">dotrafficlights</a>(TL.go,ht,figh);
+0469             
+0470             drawnow;
+0471             <a href="#_sub3" class="code" title="subfunction updatefigs">updatefigs</a>;
+0472             tic;
+0473             <span class="comment">%if daqok putvalue(parport.Line(synchline),1); end;</span>
+0474             set(htinfo(1),<span class="string">'color'</span>,htinforuncol);
+0475             drawnow;
+0476             <span class="keyword">if</span> isempty(trial_duration)
+0477                 pause
+0478             <span class="keyword">else</span>
+0479                 <span class="keyword">while</span> toc&lt;trial_duration
+0480                     <span class="comment">%                pause(trial_duration);</span>
+0481                     pause(0.015);       <span class="comment">%no point in updating any faster</span>
+0482                     set(htinfo(1),<span class="string">'string'</span>,[iruns <span class="string">' : '</span> num2str(toc,<span class="string">'%4.3f'</span>)]);
+0483                     drawnow;
+0484                 <span class="keyword">end</span>;
+0485                 
+0486             <span class="keyword">end</span>;
+0487             <span class="comment">%use mysound????, what about scaling????</span>
+0488             <span class="comment">%if daqok putvalue(parport.Line(synchline),0); end;</span>
+0489             set(htinfo(1),<span class="string">'string'</span>,[iruns <span class="string">' : '</span> num2str(toc,<span class="string">'%4.3f'</span>)],<span class="string">'color'</span>,htinfostopcol);
+0490             
+0491             <span class="keyword">if</span> ~isempty(wavend)
+0492 <span class="comment">%                 soundsc(wavend_d,wavend_sf,wavend_bits);</span>
+0493                 playerEnd.play;
+0494                 <span class="keyword">if</span> ~wavend_async
+0495                     tmppause=length(wavend_d)/wavend_sf;
+0496                     pause(tmppause);
+0497                 <span class="keyword">end</span>;
+0498             <span class="keyword">end</span>;
+0499             
+0500             mytoc=toc;
+0501             
+0502             disp(<span class="string">'Stopped'</span>);
+0503             <span class="comment">%pnet('closeall')</span>
+0504             
+0505             <span class="comment">% Stopping NDI WAVE</span>
+0506             pStopMess = <a href="wave_negPackage.html" class="code" title="function [p] = wave_negPackage (s,q,averbose)">wave_negPackage</a> (s,qStop);
+0507             disp(<span class="string">'pStopMess'</span>)
+0508             disp(pStopMess)
+0509             pause(0.5)
+0510             
+0511             
+0512             
+0513            
+0514             
+0515             [dodo,mytime]=strtok(datestr(mytime));
+0516             sx=[sx <span class="string">' '</span> mytime];
+0517             sx=[sx <span class="string">' '</span> num2str(mytoc)];
+0518             
+0519             <span class="keyword">if</span> ~isempty(userstopfunc)
+0520                 eval(userstopfunc,<span class="string">'disp(''Error evaluating userstopfunc'');disp(lasterr)'</span>);
+0521             <span class="keyword">end</span>;
+0522             
+0523             <span class="keyword">if</span> istim&lt;nstim
+0524                 <span class="comment">%display new stimulus immediately to subject</span>
+0525                 <a href="#_sub2" class="code" title="subfunction showg(ht,mys);">showg</a>(ht,ps{istim+1});
+0526                 set(htinfo(2),<span class="string">'string'</span>,[int2str(istim+1) <span class="string">' : '</span> cs{istim+1}]);
+0527                 
+0528                 <span class="comment">%            set(ht,'color','r');</span>
+0529                 <span class="comment">%            set(ht,'edgecolor','r');</span>
+0530                 <a href="#_sub4" class="code" title="subfunction dotrafficlights(tlcol,ht,figh);">dotrafficlights</a>(TL.stop,ht,figh);
+0531                 drawnow;
+0532                 <a href="#_sub3" class="code" title="subfunction updatefigs">updatefigs</a>;
+0533                 
+0534             <span class="keyword">end</span>;
+0535             
+0536             
+0537            <span class="comment">% Stopping NIDAQ aquisition:</span>
+0538             <span class="comment">% only do this if callback has not already stopped aquisition due to excess</span>
+0539             <span class="comment">% of max. samples allocated</span>
+0540             <span class="keyword">if</span> get(NIsession,<span class="string">'IsRunning'</span>)
+0541                 NIsession.stop()
+0542                 DAQData(nSampsAcquired+1:<span class="keyword">end</span>,:)=[];
+0543                 disp([<span class="string">'recorded '</span>  num2str(nSampsAcquired/srate) <span class="string">' secs.'</span> ])                
+0544                 disp([<span class="string">'saving data to '</span> daqOutFile])
+0545                 save (daqOutFile,<span class="string">'DAQData'</span>,<span class="string">'nSampsAcquired'</span>,<span class="string">'srate'</span>,<span class="string">'nchan'</span>,<span class="string">'unit'</span>,<span class="string">'private'</span>);
+0546                 <span class="comment">%disp('after Stopping:')</span>
+0547                 <span class="comment">%get(NIsession)</span>
+0548             <span class="keyword">end</span>
+0549  
+0550             
+0551             
+0552             <span class="comment">%10.03 free comment now has to be entered with explicit command</span>
+0553             
+0554             mycomm=[<span class="string">' ['</span> cs{istim} repeatstr ];
+0555             repeatstr=<span class="string">''</span>;
+0556             <span class="comment">%write trial number and time of day</span>
+0557             sx=[sx mycomm];
+0558             status=fwrite(fid,sx,<span class="string">'uchar'</span>);
+0559             
+0560             irun=irun+1;
+0561             istim=istim+1;
+0562             
+0563             <span class="keyword">if</span> istim&lt;=nstim
+0564                 disp(ps{istim});
+0565                 disp([<span class="string">'&lt;CODE&gt; '</span> cs{istim}]);
+0566             <span class="keyword">else</span>
+0567                 disp(<span class="string">'End of stimuli'</span>);
+0568                 finished=1;
+0569                 <a href="#_sub2" class="code" title="subfunction showg(ht,mys);">showg</a>(ht,<span class="string">'\fontname{Helvetica}!!END!!'</span>);
+0570                 set(htinfo(2),<span class="string">'string'</span>,<span class="string">''</span>);
+0571                 <span class="comment">%finish off last comment</span>
+0572                 status=fwrite(fid,[freecomment <span class="string">']'</span> crlf],<span class="string">'uchar'</span>);
+0573                 freecomment=<span class="string">''</span>;
+0574                 
+0575             <span class="keyword">end</span>;
+0576             
+0577             
+0578         <span class="keyword">end</span>;            <span class="comment">%next</span>
+0579         <span class="keyword">if</span> mycmd==<span class="string">'c'</span>
+0580             
+0581             freecomment=philinp(<span class="string">'Comment : '</span>);
+0582             freecomment=[<span class="string">'_'</span> freecomment];
+0583             
+0584         <span class="keyword">end</span>;
+0585         
+0586         
+0587         <span class="keyword">if</span> mycmd==<span class="string">'q'</span>
+0588             finished=1;
+0589             <a href="#_sub2" class="code" title="subfunction showg(ht,mys);">showg</a>(ht,<span class="string">'\fontname{Helvetica}!!END!!'</span>);
+0590             set(htinfo(2),<span class="string">'string'</span>,<span class="string">''</span>);
+0591             <span class="comment">%finish off last comment</span>
+0592             status=fwrite(fid,[freecomment <span class="string">']'</span> crlf],<span class="string">'uchar'</span>);
+0593             freecomment=<span class="string">''</span>;            
+0594         <span class="keyword">end</span>;
+0595         <span class="keyword">if</span> mycmd==<span class="string">'k'</span>
+0596             keyboard;
+0597         <span class="keyword">end</span>;
+0598         
+0599         <span class="keyword">if</span> ((mycmd==<span class="string">'r'</span>) | (mycmd==<span class="string">'R'</span>))
+0600             disp(<span class="string">'Repeating!!'</span>);
+0601             repeatstr=<span class="string">'!!Repeat!!'</span>;
+0602             rubbishstr=<span class="string">'!!Rubbish!!'</span>;   <span class="comment">%as comment is not closed until next &quot;next&quot; command this marks the trial with the problem</span>
+0603             
+0604             istim=istim-1;
+0605             <span class="keyword">if</span> mycmd==<span class="string">'R'</span>
+0606                 irun=irun-1;
+0607                 disp(<span class="string">'Re-using previous trial number'</span>);
+0608             <span class="keyword">end</span>;
+0609             <a href="#_sub2" class="code" title="subfunction showg(ht,mys);">showg</a>(ht,<span class="string">'\fontname{Helvetica}!Repeat!'</span>);
+0610             
+0611             disp(<span class="string">'hit any key to continue'</span>);
+0612             pause
+0613             <a href="#_sub2" class="code" title="subfunction showg(ht,mys);">showg</a>(ht,ps{istim});
+0614             <a href="#_sub4" class="code" title="subfunction dotrafficlights(tlcol,ht,figh);">dotrafficlights</a>(TL.stop,ht,figh);
+0615             disp(ps{istim});
+0616             disp([<span class="string">'&lt;CODE&gt; '</span> cs{istim}]);
+0617             set(htinfo(2),<span class="string">'string'</span>,[int2str(istim) <span class="string">' : '</span> cs{istim}]);
+0618             
+0619         <span class="keyword">end</span>;
+0620         
+0621         <span class="keyword">if</span> mycmd==<span class="string">'g'</span>
+0622             istim=abart(<span class="string">'New stimulus number'</span>,istim,1,nstim,abint,abscalar);
+0623             <a href="#_sub2" class="code" title="subfunction showg(ht,mys);">showg</a>(ht,<span class="string">'\fontname{Helvetica}!Change of Stimulus!'</span>);
+0624             rubbishstr=[<span class="string">'!!Stimulus number changed to '</span> int2str(istim) <span class="string">' !!'</span>];
+0625             repeatstr=<span class="string">'!!May be first of several repeats!!'</span>;
+0626             
+0627             disp(<span class="string">'hit any key to continue'</span>);
+0628             pause
+0629             <a href="#_sub2" class="code" title="subfunction showg(ht,mys);">showg</a>(ht,ps{istim});
+0630             <a href="#_sub4" class="code" title="subfunction dotrafficlights(tlcol,ht,figh);">dotrafficlights</a>(TL.stop,ht,figh);
+0631             disp(ps{istim});
+0632             disp([<span class="string">'&lt;CODE&gt; '</span> cs{istim}]);
+0633             set(htinfo(2),<span class="string">'string'</span>,[int2str(istim) <span class="string">' : '</span> cs{istim}]);
+0634             
+0635         <span class="keyword">end</span>;
+0636         
+0637         <span class="keyword">if</span> mycmd==<span class="string">'m'</span>
+0638             set(ht,<span class="string">'visible'</span>,<span class="string">'off'</span>);
+0639             mymess=philinp(<span class="string">'Enter message to subject '</span>);
+0640             mymess=rv2strm(mymess,crlf);
+0641             <a href="#_sub2" class="code" title="subfunction showg(ht,mys);">showg</a>(ht,mymess);
+0642             set(ht,<span class="string">'visible'</span>,<span class="string">'on'</span>,<span class="string">'edgecolor'</span>,<span class="string">'m'</span>);
+0643             
+0644         <span class="keyword">end</span>;
+0645         <span class="keyword">if</span> mycmd==<span class="string">'M'</span>
+0646             set(ht,<span class="string">'visible'</span>,<span class="string">'off'</span>);
+0647             mymess=philinp(<span class="string">'Enter message to subject '</span>);
+0648             mymess=rv2strm(mymess,crlf);
+0649             <a href="#_sub2" class="code" title="subfunction showg(ht,mys);">showg</a>(ht,mymess);
+0650             set(ht,<span class="string">'visible'</span>,<span class="string">'on'</span>,<span class="string">'edgecolor'</span>,<span class="string">'m'</span>);
+0651             disp(<span class="string">'hit any key to continue'</span>);
+0652             pause
+0653             <a href="#_sub2" class="code" title="subfunction showg(ht,mys);">showg</a>(ht,ps{istim});
+0654             <a href="#_sub4" class="code" title="subfunction dotrafficlights(tlcol,ht,figh);">dotrafficlights</a>(TL.stop,ht,figh);
+0655             
+0656             <span class="comment">%   set(ht,'edgecolor','r');</span>
+0657             disp(ps{istim});
+0658             disp([<span class="string">'&lt;CODE&gt; '</span> cs{istim}]);
+0659             
+0660         <span class="keyword">end</span>;
+0661         <span class="keyword">if</span> mycmd==<span class="string">'d'</span>
+0662             disp(<span class="string">'Enter new trial duration'</span>);
+0663             trial_duration=abart(<span class="string">'New duration'</span>,trial_duration,1,999,abnoint,abscalar);
+0664             status=fwrite(fid,[<span class="string">'&lt;Trial Duration changed to '</span> num2str(trial_duration) <span class="string">'&gt;'</span> crlf],<span class="string">'uchar'</span>);
+0665         <span class="keyword">end</span>;
+0666         
+0667     <span class="keyword">end</span>;
+0668     mystr=abartstr(<span class="string">'Terminate ? '</span>,<span class="string">'y'</span>);
+0669     mystr=lower(mystr);
+0670     
+0671     <span class="keyword">if</span> mystr~=<span class="string">'n'</span> all_done=1; <span class="keyword">end</span>;
+0672 <span class="keyword">end</span>;
+0673 
+0674 status=fclose(fid);
+0675 
+0676 disp(<span class="string">'hit any key to exit program'</span>);
+0677 pause;
+0678 
+0679 <span class="comment">% clean up</span>
+0680 hfinv=findobj(<span class="string">'type'</span>,<span class="string">'figure'</span>,<span class="string">'name'</span>,<span class="string">'Investigator'</span>);
+0681 delete([hfsub;hfinv]);
+0682 
+0683 hfDAQFound=findobj(<span class="string">'Tag'</span>,<span class="string">'hfDAQ'</span>);
+0684 delete(hfDAQFound)
+0685 
+0686 s.close;
+0687 clear s;
+0688 
+0689 delete(lh)
+0690 clear NIsession
+0691 daqreset
+0692 
+0693 
+0694 <span class="comment">% if daqok</span>
+0695 <span class="comment">%     delete(parport);</span>
+0696 <span class="comment">%     clear parport;</span>
+0697 <span class="comment">% end;</span>
+0698 
+0699 
+0700 
+0701 
+0702 <a name="_sub3" href="#_subfunctions" class="code">function showg(ht,mys);</a>
+0703 <span class="comment">%note: other version have third input argument to flag vt220 control</span>
+0704 <span class="comment">%08.11 only automatically turn visibility on at end if current visibility</span>
+0705 <span class="comment">%is on</span>
+0706 <span class="comment">%Not yet sure this will work properly if mixing image and text prompts</span>
+0707 <span class="comment">%imageprefix='&lt;IMAGE&gt;';</span>
+0708 
+0709 oldhtvis=get(ht(1),<span class="string">'visible'</span>);      <span class="comment">%if current visibility is 'off' (e.g because of action in userstopfunc, leave off at end)</span>
+0710 hfsub=findobj(<span class="string">'type'</span>,<span class="string">'figure'</span>,<span class="string">'name'</span>,<span class="string">'Subject'</span>);
+0711 P=get(hfsub,<span class="string">'userdata'</span>);
+0712 
+0713 hi=findobj(<span class="string">'type'</span>,<span class="string">'image'</span>,<span class="string">'tag'</span>,P.imageprefix);
+0714 oldhivis=<span class="string">''</span>;
+0715 <span class="keyword">if</span> ~isempty(hi) 
+0716     oldhivis=get(hi,<span class="string">'visible'</span>);
+0717     set(hi,<span class="string">'visible'</span>,<span class="string">'off'</span>); 
+0718 <span class="keyword">end</span>;
+0719 hai=findobj(<span class="string">'type'</span>,<span class="string">'axes'</span>,<span class="string">'tag'</span>,P.imageprefix);
+0720 
+0721 set(ht,<span class="string">'visible'</span>,<span class="string">'off'</span>);
+0722 
+0723 mysc=char(mys);
+0724 <span class="keyword">if</span> findstr(P.imageprefix,mysc(1,:))
+0725     
+0726     <span class="keyword">if</span> ~isempty(hi)
+0727         tmp=strrep(mysc(1,:),P.imageprefix,<span class="string">''</span>);
+0728         imnum=str2num(tmp);
+0729         <span class="keyword">if</span> ~isempty(imnum)
+0730             <span class="keyword">if</span> ~isempty(hai)
+0731                 imdata=get(hai(1),<span class="string">'userdata'</span>);
+0732                 <span class="keyword">if</span> iscell(imdata)
+0733                     imdata=imdata{imnum};
+0734                     set(hi,<span class="string">'cdata'</span>,imdata);
+0735                     <span class="keyword">if</span> strcmp(oldhivis,<span class="string">'on'</span>)
+0736                         set(hi,<span class="string">'visible'</span>,<span class="string">'on'</span>);     <span class="comment">%handle axes visibility the same?</span>
+0737                     <span class="keyword">end</span>;
+0738                     
+0739                     set(hai,<span class="string">'visible'</span>,<span class="string">'on'</span>);
+0740                     P.promptmode=<span class="string">'image'</span>;
+0741                     set(hfsub,<span class="string">'userdata'</span>,P)
+0742                     drawnow;
+0743                     <a href="#_sub3" class="code" title="subfunction updatefigs">updatefigs</a>;
+0744                     <span class="keyword">return</span>;
+0745                 <span class="keyword">end</span>;
+0746             <span class="keyword">end</span>;
+0747         <span class="keyword">end</span>;
+0748     <span class="keyword">end</span>;
+0749     
+0750 <span class="keyword">end</span>;
+0751 
+0752 <span class="comment">%if image display not possible, treat as normal text display</span>
+0753 
+0754 
+0755 <span class="comment">%normal text display</span>
+0756 
+0757 <span class="comment">%turn off axes containing image if last prompt was image</span>
+0758 <span class="keyword">if</span> strcmp(P.promptmode,<span class="string">'image'</span>)
+0759     set(hai,<span class="string">'visible'</span>,<span class="string">'off'</span>);
+0760     <span class="comment">%    hfinv=findobj('type','figure','name','Investigator');</span>
+0761     <span class="comment">%    set([hfsub hfinv],'color',P.figurebasecolor);</span>
+0762 <span class="keyword">end</span>;
+0763 
+0764 P.promptmode=<span class="string">'text'</span>;
+0765 set(hfsub,<span class="string">'userdata'</span>,P);
+0766 
+0767 tmpsize=get(ht(1),<span class="string">'userdata'</span>);
+0768 set(ht,<span class="string">'fontsize'</span>,tmpsize);
+0769 set(ht,<span class="string">'string'</span>,mys);
+0770 eee=get(ht(1),<span class="string">'extent'</span>);
+0771 ppp=get(ht(1),<span class="string">'position'</span>);
+0772 
+0773 maxex=max(eee(3:4));
+0774 <span class="keyword">if</span> maxex&gt;1
+0775     disp([<span class="string">'Reducing font to fit ['</span>, num2str(1/maxex), <span class="string">']'</span>]);
+0776     <span class="comment">%disp(1/maxex);</span>
+0777     tmpsize=get(ht(1),<span class="string">'fontsize'</span>)*(1/maxex);
+0778     set(ht,<span class="string">'fontsize'</span>,tmpsize);
+0779     eee=get(ht(1),<span class="string">'extent'</span>);
+0780 <span class="keyword">end</span>;
+0781 
+0782 xe=eee(3);
+0783 <span class="comment">%disp('extent');</span>
+0784 <span class="comment">%disp(eee);</span>
+0785 
+0786 
+0787 halign=get(ht(1),<span class="string">'horizontalalignment'</span>);
+0788 <span class="keyword">if</span> strcmp(halign,<span class="string">'left'</span>)
+0789     ppp(1)=0.5-xe/2;
+0790 <span class="keyword">else</span>
+0791     ppp(1)=0.5;
+0792 <span class="keyword">end</span>;
+0793 
+0794 
+0795 set(ht,<span class="string">'position'</span>,ppp);
+0796 
+0797 <span class="comment">%disp('position')</span>
+0798 <span class="comment">%disp(ppp);</span>
+0799 <span class="comment">%disp('axes x/y lim');</span>
+0800 <span class="comment">%disp([get(gca,'xlim') get(gca,'ylim')]);</span>
+0801 
+0802 <span class="keyword">if</span> strcmp(oldhtvis,<span class="string">'on'</span>)
+0803     set(ht,<span class="string">'visible'</span>,<span class="string">'on'</span>);
+0804 <span class="keyword">end</span>;
+0805 
+0806 drawnow;
+0807 <a href="#_sub3" class="code" title="subfunction updatefigs">updatefigs</a>;
+0808 
+0809 <a name="_sub4" href="#_subfunctions" class="code">function updatefigs</a>
+0810 <span class="keyword">return</span>;    <span class="comment">%disabled</span>
+0811 hfi=findobj(<span class="string">'type'</span>,<span class="string">'figure'</span>,<span class="string">'name'</span>,<span class="string">'Investigator'</span>);
+0812 
+0813 <span class="keyword">if</span> isempty(hfi) <span class="keyword">return</span>; <span class="keyword">end</span>;        <span class="comment">%assume separate figure not needed</span>
+0814 
+0815 hfs=findobj(<span class="string">'type'</span>,<span class="string">'figure'</span>,<span class="string">'name'</span>,<span class="string">'Subject'</span>);
+0816 
+0817 ppps=get(hfs,<span class="string">'position'</span>);
+0818 pppi=get(hfi,<span class="string">'position'</span>);
+0819 
+0820 set(hfs,<span class="string">'position'</span>,ppps);    <span class="comment">%must have been a typo here</span>
+0821 set(hfi,<span class="string">'position'</span>,pppi);
+0822 
+0823 <span class="keyword">return</span>;
+0824 
+0825 figure(hf);
+0826 
+0827 refresh(hf);
+0828 drawnow;
+0829 
+0830 <span class="comment">%ppos=get(0,'pointerlocation');</span>
+0831 <span class="comment">%fpos=get(hf,'position');</span>
+0832 <span class="comment">%newpos=ppos;</span>
+0833 <span class="comment">%newpos=[fpos(1)+fpos(3)/2 fpos(2)+fpos(4)/2];</span>
+0834 <span class="comment">%set(0,'pointerlocation',newpos);</span>
+0835 hf=findobj(<span class="string">'type'</span>,<span class="string">'figure'</span>,<span class="string">'name'</span>,<span class="string">'Subject'</span>);
+0836 figure(hf);
+0837 refresh(hf);
+0838 drawnow;
+0839 <span class="comment">%set(0,'pointerlocation',ppos);</span>
+0840 
+0841 <a name="_sub5" href="#_subfunctions" class="code">function dotrafficlights(tlcol,ht,figh);</a>
+0842 P=get(figh(1),<span class="string">'userdata'</span>);
+0843 
+0844 <span class="keyword">if</span> strcmp(P.promptmode,<span class="string">'text'</span>)
+0845     oldcol=get(ht(1),<span class="string">'edgecolor'</span>);
+0846     <span class="keyword">if</span> any(oldcol~=tlcol) set(ht,<span class="string">'edgecolor'</span>,tlcol); <span class="keyword">end</span>;
+0847 <span class="keyword">end</span>;
+0848 <span class="keyword">if</span> strcmp(P.promptmode,<span class="string">'image'</span>)
+0849     hai=findobj(<span class="string">'type'</span>,<span class="string">'axes'</span>,<span class="string">'tag'</span>,P.imageprefix);
+0850     oldcol=get(hai(1),<span class="string">'color'</span>);
+0851     <span class="keyword">if</span> any(oldcol~=tlcol) set(hai,<span class="string">'color'</span>,tlcol); <span class="keyword">end</span>;
+0852     <span class="comment">%    oldcol=get(figh(1),'color');</span>
+0853     <span class="comment">%    if any(oldcol~=tlcol) set(figh,'color',tlcol); end;</span>
+0854 <span class="keyword">end</span>;
+0855 <a name="_sub6" href="#_subfunctions" class="code">function showhelp</a>
+0856 helpstr=str2mat(<span class="keyword">...</span>
+0857     <span class="string">'Commands are:'</span>,<span class="keyword">...</span>
+0858     <span class="string">'n = next (default)'</span>,<span class="keyword">...</span>
+0859     <span class="string">'c = comment'</span>,<span class="keyword">...</span>
+0860     <span class="string">'d = set trial duration'</span>,<span class="keyword">...</span>
+0861     <span class="string">'r = repeat'</span>,<span class="keyword">...</span>
+0862     <span class="string">'R = repeat with old trial number'</span>,<span class="keyword">...</span>
+0863     <span class="string">'g = goto'</span>,<span class="keyword">...</span>
+0864     <span class="string">'m = message'</span>,<span class="keyword">...</span>
+0865     <span class="string">'M = message and resume'</span>,<span class="keyword">...</span>
+0866     <span class="string">'q = quit'</span>,<span class="keyword">...</span>
+0867     <span class="string">'k = keyboard'</span>,<span class="keyword">...</span>
+0868     <span class="string">'h = help'</span>);
+0869 disp(helpstr);
+0870 helpwin(helpstr,<span class="string">'Prompt commands'</span>);
+0871 
+0872 <span class="comment">%    'a = autonext',...</span>
+0873 <span class="comment">%    't = set trial number',...</span></pre></div>
+<hr><address>Generated on Wed 30-Jan-2013 17:04:26 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

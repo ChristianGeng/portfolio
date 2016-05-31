@@ -1,0 +1,151 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of extractNIDAQsmpte</title>
+  <meta name="keywords" content="extractNIDAQsmpte">
+  <meta name="description" content="extractNIDAQsmpte: Extract the SMPTE code from National Instruments Files">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">NDIWAVES</a> &gt; extractNIDAQsmpte.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for NDIWAVES&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>extractNIDAQsmpte
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>extractNIDAQsmpte: Extract the SMPTE code from National Instruments Files</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function extractNIDAQsmpte( daqPath,smpte_chn_NI) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> extractNIDAQsmpte: Extract the SMPTE code from National Instruments Files
+   and saves it to daqPath under filename smpte_raw.mat
+ 
+ Uses SMPTE_dec.m by Javier Jaimovich (2011) which is distributed via the
+ svn repo.
+ 
+ Inputs:
+ daqPath: Common part of DAQ signal
+ smpte_chn_NI: Which channel contains the SMPTE code? 
+ 
+ 07-Jun-2012: account for cese sensitivity starting with Matlab R20012a
+ (function fileparts).
+ 
+ SEE ALSO <a href="SMPTE_dec.html" class="code" title="function [TC, TCstr, E_per] = SMPTE_dec(smpte_audio,SR,fps,debug)">SMPTE_dec</a>
+
+ Version $21-Jun-2012$, CG
+
+ Changelog:
+ $21-Jun-2012$: experimental median filter (not used by default)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="SMPTE_dec.html" class="code" title="function [TC, TCstr, E_per] = SMPTE_dec(smpte_audio,SR,fps,debug)">SMPTE_dec</a>	% SMPTE audio decoder v2.4</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="../usertemplates/NDIsingle/do_getsynch_NDI.html" class="code" title="function do_getsynch_NDI">do_getsynch_NDI</a>	DO_GETSYNCH_NDI: Generate synch info from NDI/NIDAQ data structures</li></ul>
+<!-- crossreference -->
+
+
+<h2><a name="_download"></a>DOWNLOAD <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<p><a href="extractNIDAQsmpte.m">extractNIDAQsmpte.m</a></p>
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function extractNIDAQsmpte( daqPath,smpte_chn_NI)</a>
+0002 <span class="comment">% extractNIDAQsmpte: Extract the SMPTE code from National Instruments Files</span>
+0003 <span class="comment">%   and saves it to daqPath under filename smpte_raw.mat</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">% Uses SMPTE_dec.m by Javier Jaimovich (2011) which is distributed via the</span>
+0006 <span class="comment">% svn repo.</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% Inputs:</span>
+0009 <span class="comment">% daqPath: Common part of DAQ signal</span>
+0010 <span class="comment">% smpte_chn_NI: Which channel contains the SMPTE code?</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">% 07-Jun-2012: account for cese sensitivity starting with Matlab R20012a</span>
+0013 <span class="comment">% (function fileparts).</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">% SEE ALSO SMPTE_dec</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">% Version $21-Jun-2012$, CG</span>
+0018 <span class="comment">%</span>
+0019 <span class="comment">% Changelog:</span>
+0020 <span class="comment">% $21-Jun-2012$: experimental median filter (not used by default)</span>
+0021 
+0022 
+0023 doMedFilt=0;
+0024 
+0025 NIDAQSmpteRaw=dir([daqPath,<span class="string">'*.mat'</span>])
+0026 [pathStr,fName,ext] = fileparts(daqPath);
+0027 
+0028 diary([pathStr pathchar <span class="string">'smpte_raw.log'</span>])
+0029 
+0030 errN_NI=NaN; <span class="comment">% when SMPTE does not work for first trial</span>
+0031 
+0032 misslIdx=0;
+0033 missNIDAQ={<span class="string">''</span>}
+0034 
+0035 <span class="keyword">for</span> fnum=1:length(NIDAQSmpteRaw)
+0036     infile=[pathStr pathchar NIDAQSmpteRaw(fnum).name];
+0037     NIDAQ=load(infile);
+0038     
+0039     <span class="keyword">try</span>
+0040         soundout=soundsc_cg(NIDAQ.DAQData(:,smpte_chn_NI),NIDAQ.srate);
+0041          <span class="keyword">if</span> doMedFilt
+0042              soundout=medfilt1(soundout);
+0043          <span class="keyword">end</span>
+0044         [smpte_NI smpte_str_NI,errN_NI] = <a href="SMPTE_dec.html" class="code" title="function [TC, TCstr, E_per] = SMPTE_dec(smpte_audio,SR,fps,debug)">SMPTE_dec</a>(soundout,NIDAQ.srate,25,0);
+0045         
+0046          NIDAQSmpteRaw(fnum).smpteduration=smpte_NI(<span class="keyword">end</span>,end)-smpte_NI(1,end);
+0047          NIDAQSmpteRaw(fnum).smpteFirstFrame=smpte_NI(1,:);
+0048          NIDAQSmpteRaw(fnum).smpteLastFrame=smpte_NI(<span class="keyword">end</span>,:);
+0049          NIDAQSmpteRaw(fnum).percenterr=errN_NI;
+0050          NIDAQSmpteRaw(fnum).infile=infile;
+0051          tMess=sprintf(<span class="string">'problem with SMPTE CODE, per. missing:  %3.4f\n'</span>,errN_NI);
+0052          assert(errN_NI==0,tMess);
+0053          
+0054          
+0055     <span class="keyword">catch</span>, 
+0056          NIDAQSmpteRaw(fnum).smpteduration=NaN;
+0057          NIDAQSmpteRaw(fnum).smpteFirstFrame=repmat(NaN,1,5);
+0058          NIDAQSmpteRaw(fnum).smpteLastFrame=repmat(NaN,1,5);
+0059          NIDAQSmpteRaw(fnum).percenterr=errN_NI;
+0060          NIDAQSmpteRaw(fnum).infile=infile;
+0061          misslIdx=misslIdx+1;
+0062          missNIDAQ{misslIdx,1}=fnum;
+0063          missNIDAQ{misslIdx,2}=infile;
+0064          missNIDAQ{misslIdx,1}=lasterr;
+0065          
+0066          warning(lasterr)
+0067          warning([<span class="string">'Problematic file: '</span> infile])
+0068          warning([<span class="string">'percentage of frames with errors: '</span> num2str(errN_NI)]);
+0069     <span class="keyword">end</span>
+0070     
+0071     
+0072     NIDAQSmpteRaw(fnum).daqPath=daqPath;
+0073     NIDAQSmpteRaw(fnum).smpte_chn_NI=smpte_chn_NI;
+0074     
+0075      disp([<span class="string">'processed '</span> infile <span class="string">', dur. '</span>  num2str(NIDAQSmpteRaw(fnum).smpteduration)])
+0076     
+0077 <span class="keyword">end</span>
+0078 
+0079 disp(<span class="string">'Type RETURN to continue'</span>)
+0080 <span class="comment">% keyboard</span>
+0081 
+0082 outfile=[pathStr pathchar <span class="string">'smpte_raw'</span>]
+0083 comment=<span class="string">'daqPath: Infile used'</span>;
+0084 save(outfile,<span class="string">'NIDAQSmpteRaw'</span>,<span class="string">'smpte_chn_NI'</span>,<span class="string">'daqPath'</span>,<span class="string">'comment'</span>,<span class="string">'missNIDAQ'</span>);
+0085 diary off</pre></div>
+<hr><address>Generated on Wed 30-Jan-2013 17:04:26 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

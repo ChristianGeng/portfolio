@@ -1,0 +1,428 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of comppos_fm_cg</title>
+  <meta name="keywords" content="comppos_fm_cg">
+  <meta name="description" content="COMPPOS_FM Compare coordinates and additional parameters like rms between sensors or processing versions">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">NDIWAVES</a> &gt; comppos_fm_cg.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for NDIWAVES&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>comppos_fm_cg
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>COMPPOS_FM Compare coordinates and additional parameters like rms between sensors or processing versions</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [rmsstat,tangstat,eucstat,dtstat,trialn,costat]=comppos_f(basepath,altpath,triallist,kanallistb,autoflag,colist1,colist2) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> COMPPOS_FM Compare coordinates and additional parameters like rms between sensors or processing versions
+ function [rmsstat,tangstat,eucstat,dtstat,trialn,costat]=comppos_fm(basepath,altpath,triallist,kanallistb,autoflag,colist1,colist2)
+ comppos_fm: Version 09.05.08
+
+   Description
+       Input arguments:
+       basepath, altpath: Common part of file name (without 4 digit trial
+           number, but with final backslash if name only consists of digits). Altpath is optional
+       triallist: List of trials
+           or list of trials (col 1) and cut start and end in seconds (cols 2 and 3)
+       kanallistb: List of channels (sensors) to display
+           When both basepath and altpath are used (e.g to compare
+           different processing versions) then it is often easiest to just
+           have one channel in this list
+       autoflag: If true do not pause between trials
+       colist1: List of coordinates to display (up to 4)
+       colist2: Optional. Additional parameters to display (up to 2). If not
+       specified, the normal input file arrangement will result in rms and
+       the supplementary parameter being displayed
+       Note on colist1 and colist2:
+           If the input data has orientations in spherical coordinates
+           this is converted to unit vector representation. The program
+           then behaves as if the input data were arranged:
+               posx, posy, posz, orix, oriy, oriz, rms, supplementary parameter
+           So entries in colist1 and colist2 refer to this set of 8
+           parameters
+       Output arguments:
+       Various statistics are returned for the first sensor in the list.
+       Rows correspond to trials
+       For rmsstat, tangstat, eucstat and dtstat the columns are  mean, std, max, min, 2.5%tile, 97.5%tile
+       trialn contains (for each trial) the total data in col. 1 and the total non-NaN (i.e valid) data in col. 2
+       For costat the columns are the 6 coordinates (3 position + 3 orientation)
+       rmsstat contains rms values or whatever parameter is specified as
+       first entry in colist2
+       dtstat contains values of the supplementary parameter or whatever parameter is specified as
+       second entry in colist2
+       tangstat contains tangential velocity values for the first channel
+       in the list
+       eucstat contains the euclidean distance between the first and
+       second channel in the list (when only one channel is specified and
+       altpath is used then this will be the distance between this channel
+       in the two different input files. Channels from the altpath file
+       have 12 added to the channel number in the display legend)
+
+   Updates
+       5.08 trialn now returns total and valid data per trial</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="do_comppos_a_f_cg.html" class="code" title="function do_comppos_a_f_cg(basepath,altpath,triallist,kanallist,comp_sensor,auto_flag,diaryfile)">do_comppos_a_f_cg</a>	function do_comppos_a_f(basepath,altpath,triallist,kanallist,comp_sensor,auto_flag,diaryfile)</li></ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="#_sub1" class="code">functionname=</a></li><li><a href="#_sub2" class="code">function doplot(hl,pptmp,tvec);</a></li></ul>
+<h2><a name="_download"></a>DOWNLOAD <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<p><a href="comppos_fm_cg.m">comppos_fm_cg.m</a></p>
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [rmsstat,tangstat,eucstat,dtstat,trialn,costat]=comppos_f(basepath,altpath,triallist,kanallistb,autoflag,colist1,colist2)</a>
+0002 <span class="comment">% COMPPOS_FM Compare coordinates and additional parameters like rms between sensors or processing versions</span>
+0003 <span class="comment">% function [rmsstat,tangstat,eucstat,dtstat,trialn,costat]=comppos_fm(basepath,altpath,triallist,kanallistb,autoflag,colist1,colist2)</span>
+0004 <span class="comment">% comppos_fm: Version 09.05.08</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">%   Description</span>
+0007 <span class="comment">%       Input arguments:</span>
+0008 <span class="comment">%       basepath, altpath: Common part of file name (without 4 digit trial</span>
+0009 <span class="comment">%           number, but with final backslash if name only consists of digits). Altpath is optional</span>
+0010 <span class="comment">%       triallist: List of trials</span>
+0011 <span class="comment">%           or list of trials (col 1) and cut start and end in seconds (cols 2 and 3)</span>
+0012 <span class="comment">%       kanallistb: List of channels (sensors) to display</span>
+0013 <span class="comment">%           When both basepath and altpath are used (e.g to compare</span>
+0014 <span class="comment">%           different processing versions) then it is often easiest to just</span>
+0015 <span class="comment">%           have one channel in this list</span>
+0016 <span class="comment">%       autoflag: If true do not pause between trials</span>
+0017 <span class="comment">%       colist1: List of coordinates to display (up to 4)</span>
+0018 <span class="comment">%       colist2: Optional. Additional parameters to display (up to 2). If not</span>
+0019 <span class="comment">%       specified, the normal input file arrangement will result in rms and</span>
+0020 <span class="comment">%       the supplementary parameter being displayed</span>
+0021 <span class="comment">%       Note on colist1 and colist2:</span>
+0022 <span class="comment">%           If the input data has orientations in spherical coordinates</span>
+0023 <span class="comment">%           this is converted to unit vector representation. The program</span>
+0024 <span class="comment">%           then behaves as if the input data were arranged:</span>
+0025 <span class="comment">%               posx, posy, posz, orix, oriy, oriz, rms, supplementary parameter</span>
+0026 <span class="comment">%           So entries in colist1 and colist2 refer to this set of 8</span>
+0027 <span class="comment">%           parameters</span>
+0028 <span class="comment">%       Output arguments:</span>
+0029 <span class="comment">%       Various statistics are returned for the first sensor in the list.</span>
+0030 <span class="comment">%       Rows correspond to trials</span>
+0031 <span class="comment">%       For rmsstat, tangstat, eucstat and dtstat the columns are  mean, std, max, min, 2.5%tile, 97.5%tile</span>
+0032 <span class="comment">%       trialn contains (for each trial) the total data in col. 1 and the total non-NaN (i.e valid) data in col. 2</span>
+0033 <span class="comment">%       For costat the columns are the 6 coordinates (3 position + 3 orientation)</span>
+0034 <span class="comment">%       rmsstat contains rms values or whatever parameter is specified as</span>
+0035 <span class="comment">%       first entry in colist2</span>
+0036 <span class="comment">%       dtstat contains values of the supplementary parameter or whatever parameter is specified as</span>
+0037 <span class="comment">%       second entry in colist2</span>
+0038 <span class="comment">%       tangstat contains tangential velocity values for the first channel</span>
+0039 <span class="comment">%       in the list</span>
+0040 <span class="comment">%       eucstat contains the euclidean distance between the first and</span>
+0041 <span class="comment">%       second channel in the list (when only one channel is specified and</span>
+0042 <span class="comment">%       altpath is used then this will be the distance between this channel</span>
+0043 <span class="comment">%       in the two different input files. Channels from the altpath file</span>
+0044 <span class="comment">%       have 12 added to the channel number in the display legend)</span>
+0045 <span class="comment">%</span>
+0046 <span class="comment">%   Updates</span>
+0047 <span class="comment">%       5.08 trialn now returns total and valid data per trial</span>
+0048 
+0049 
+0050 <a name="_sub1" href="#_subfunctions" class="code">functionname=</a><span class="string">'comppos_fm: Version 9.5.08'</span>;
+0051 
+0052 myprctile=[2.5 97.5];   <span class="comment">%percentiles for statistics</span>
+0053 nlist=size(triallist,1);
+0054 ndig=4;         <span class="comment">%could be made variable?</span>
+0055 
+0056 ncoord=6;       <span class="comment">%assume fixed (3 position + 3 orientation</span>
+0057 
+0058 tsub=0;
+0059 <span class="keyword">if</span> size(triallist,2)==3 tsub=1; <span class="keyword">end</span>;
+0060 <span class="comment">%stats for first channel in list</span>
+0061 <span class="comment">% columns are  mean, std, max, min, 2.5%tile, 97.5%tile</span>
+0062 
+0063 rmsstat=ones(nlist,6)*NaN;
+0064 tangstat=ones(nlist,6)*NaN;
+0065 eucstat=ones(nlist,6)*NaN;
+0066 dtstat=ones(nlist,6)*NaN;
+0067 trialn=ones(nlist,2)*NaN;
+0068 
+0069 <span class="comment">%mean for first channel in list (posx/y/z, and orix/y/z)</span>
+0070 costat=ones(nlist,ncoord)*NaN;
+0071 
+0072 
+0073 <span class="comment">%same for both figs, i.e one figure has rms, tang. vel., euc. dist and the</span>
+0074 <span class="comment">%additional parameter (e.g distance between different solutions)</span>
+0075 <span class="comment">%the other figure can show up to 4 of the 6 coordinates</span>
+0076 
+0077 sprow=2;
+0078 spcol=2;
+0079 
+0080 maxco=sprow*spcol;
+0081 
+0082 <span class="comment">%get from descriptor</span>
+0083 <span class="comment">%colabel=str2mat('x','y','z','phi','theta','rms','dt');</span>
+0084 
+0085 <span class="comment">%normally loaded from input file</span>
+0086 sf=200;
+0087 
+0088 colist=colist1;
+0089 nco=length(colist);
+0090 
+0091 <span class="keyword">if</span> nco&gt;maxco
+0092     disp(<span class="string">'too many coordinates to display'</span>);
+0093     <span class="keyword">return</span>;
+0094 <span class="keyword">end</span>;
+0095 
+0096 rmsp=7;
+0097 extrap=8;
+0098 <span class="keyword">if</span> nargin&gt;6
+0099     rmsp=colist2(1);
+0100     <span class="keyword">if</span> length(colist2)&gt;1 extrap=colist2(2); <span class="keyword">end</span>;
+0101 <span class="keyword">end</span>;
+0102 
+0103 maxkanal=12;        <span class="comment">%assume fixed</span>
+0104 <span class="comment">%kanallistb=[1 6];</span>
+0105 lastfpos=[];
+0106 hf1=figure;
+0107 hf2=figure;
+0108 lasttrial=0;
+0109 
+0110 <span class="keyword">for</span> ilist=1:nlist
+0111     trialdata=triallist(ilist,:);
+0112     <span class="keyword">if</span> length(trialdata)&gt;1
+0113         disp([<span class="string">'Trial data: '</span> int2str([ilist trialdata(1)]) <span class="string">' '</span> num2str(trialdata(2:3))]);
+0114     <span class="keyword">else</span>
+0115         disp([<span class="string">'Trial data: '</span> int2str([ilist trialdata(1)])]);
+0116     <span class="keyword">end</span>;
+0117 
+0118     mytrial=trialdata(1);
+0119     <span class="keyword">if</span> mytrial~=lasttrial
+0120         disp(<span class="string">'reading 1'</span>);
+0121         file1=[basepath  int2str0(mytrial,ndig)];
+0122 
+0123         [pbig1,descriptor,unit,dimension,sensorlist]=loadpos_sph2cartm(file1);
+0124 
+0125         <span class="keyword">if</span> ~isempty(pbig1)
+0126             <span class="comment">%set up true time axis</span>
+0127             sf=mymatin(file1,<span class="string">'samplerate'</span>,200);
+0128             disp(sf)
+0129             tvecall=((1:size(pbig1,1))-1)*(1/sf);
+0130             sensorlist=sensorlist(kanallistb,:);
+0131         <span class="keyword">end</span>;
+0132 
+0133     <span class="keyword">end</span>;
+0134     <span class="keyword">if</span> ~isempty(pbig1)
+0135 
+0136         <span class="keyword">if</span> tsub
+0137             segdata=round(trialdata(2:3)*sf)+1;
+0138             pp1=pbig1(segdata(:,1):segdata(:,2),:,:);
+0139             tvec=tvecall(segdata(:,1),segdata(:,2));
+0140         <span class="keyword">else</span>
+0141             pp1=pbig1;
+0142             tvec=tvecall;
+0143         <span class="keyword">end</span>;
+0144 
+0145         kanallist=kanallistb;
+0146         pp2=[];
+0147         <span class="keyword">if</span> ~isempty(altpath)
+0148             <span class="keyword">if</span> mytrial~=lasttrial
+0149                 disp(<span class="string">'reading 2'</span>);
+0150                 file2=[altpath  int2str0(mytrial,ndig)];
+0151                 [pbig2,descriptor2,unit2,dimension2,sensorlist2]=loadpos_sph2cartm(file2);
+0152 
+0153                 <span class="comment">%should check units and dimension match first file</span>
+0154                 sf2=mymatin(file2,<span class="string">'samplerate'</span>,200);
+0155 
+0156                 sensorlist=str2mat(sensorlist,sensorlist2(kanallistb,:));
+0157 
+0158                 <span class="comment">%allow for different sample rates by simple resampling</span>
+0159                 <span class="keyword">if</span> sf2~=sf
+0160                     <span class="comment">%                    ?????</span>
+0161                     tvec2=((1:size(pbig2,1))-1)*(1/sf2);
+0162                     <span class="comment">%interpolate</span>
+0163                     pbig2=interp1(tvec2,pbig2,tvecall);
+0164                     pbig2=reshape(pbig2,size(pbig1));
+0165                     <span class="comment">%                    keyboard;</span>
+0166                 <span class="keyword">end</span>;
+0167             <span class="keyword">end</span>;
+0168             <span class="keyword">if</span> tsub
+0169                 pp2=pbig2(segdata(:,1):segdata(:,2),:,:);
+0170             <span class="keyword">else</span>
+0171                 pp2=pbig2;
+0172             <span class="keyword">end</span>;
+0173             pp1=cat(3,pp1,pp2);
+0174             maxkanal=size(pbig1,3);
+0175             kanallist=[kanallist kanallistb+maxkanal];
+0176         <span class="keyword">end</span>;
+0177         nkanal=length(kanallist);
+0178         lasttrial=mytrial;
+0179         figure(hf1)
+0180         <span class="comment">%        if ~isempty(lastfpos) set(hf1,'position',lastfpos(1,:)); end;</span>
+0181         <span class="comment">%        disp(mytrial);</span>
+0182 
+0183         <span class="comment">%means of position and orientation for first channel in list from</span>
+0184         <span class="comment">%basepath</span>
+0185         costat(ilist,:)=nanmean(pp1(:,1:ncoord,kanallist(1)));
+0186 
+0187 
+0188         <span class="keyword">for</span> ico=1:nco
+0189             pptmp=squeeze(pp1(:,colist(ico),kanallist));
+0190             <span class="keyword">if</span> ilist==1
+0191                 <span class="keyword">if</span> ico==1 hl=ones(length(kanallist),nco)*NaN; <span class="keyword">end</span>;
+0192                 hax(ico)=subplot(sprow,spcol,ico);
+0193                 hl(:,ico)=plot(tvec,pptmp);
+0194                 <span class="comment">%               keyboard;</span>
+0195                 <span class="keyword">if</span> ico==1
+0196                     <span class="comment">%                    keyboard;</span>
+0197                     [LEGH,OBJH,OUTH,OUTM]=legend(hl(:,ico),strcat(int2str(kanallist'),<span class="string">' : '</span>,sensorlist));
+0198 
+0199                     hxxx=findobj(OBJH,<span class="string">'type'</span>,<span class="string">'text'</span>);
+0200                     set(hxxx,<span class="string">'interpreter'</span>,<span class="string">'none'</span>);
+0201                 <span class="keyword">end</span>;
+0202                 title(descriptor(colist(ico),:),<span class="string">'interpreter'</span>,<span class="string">'none'</span>);
+0203                 xlabel(<span class="string">'Time (s)'</span>);
+0204                 ylabel(unit(colist(ico),:));
+0205             <span class="keyword">else</span>
+0206                 <a href="#_sub2" class="code" title="subfunction doplot(hl,pptmp,tvec);">doplot</a>(hl(:,ico),pptmp,tvec);
+0207             <span class="keyword">end</span>;
+0208 
+0209             drawnow;
+0210         <span class="keyword">end</span>;
+0211         figure(hf2);
+0212         <span class="comment">%        if ~isempty(lastfpos) set(hf2,'position',lastfpos(2,:)); end;</span>
+0213 
+0214         eucbuft=zeros(size(pp1,1),nkanal);
+0215         <span class="keyword">for</span> ikanal=1:nkanal
+0216             posdat=pp1(:,1:3,kanallist(ikanal));
+0217             euctmp=eucdistn(posdat(1:end-1,:),posdat(2:<span class="keyword">end</span>,:))*sf;
+0218             eucbuft(:,ikanal)=[euctmp;euctmp(end)];  <span class="comment">%make same length as other time functions</span>
+0219         <span class="keyword">end</span>;
+0220 
+0221         <span class="keyword">if</span> ilist==1
+0222             spi=1;
+0223             hax2(spi)=subplot(sprow,spcol,spi);
+0224             hltang=plot(tvec,eucbuft);
+0225             title(<span class="string">'Tangential velocity'</span>);
+0226             xlabel(<span class="string">'Time (s)'</span>);
+0227             ylabel([unit(1,:) <span class="string">'/s'</span>]);
+0228         <span class="keyword">else</span>
+0229             <a href="#_sub2" class="code" title="subfunction doplot(hl,pptmp,tvec);">doplot</a>(hltang,eucbuft,tvec);
+0230         <span class="keyword">end</span>;
+0231 
+0232         drawnow;
+0233 
+0234         <span class="keyword">if</span> sum(~isnan(eucbuft(:,1)))&gt;1
+0235             tangstat(ilist,:)=[nanmean(eucbuft(:,1)) nanstd(eucbuft(:,1)) max(eucbuft(:,1)) min(eucbuft(:,1)) prctile(eucbuft(:,1),myprctile)];
+0236         <span class="keyword">end</span>;
+0237 
+0238 
+0239         rmsname=descriptor(rmsp,:);
+0240         rmsbuf=squeeze(pp1(:,rmsp,kanallist));       <span class="comment">%rms</span>
+0241         <span class="keyword">if</span> ilist==1
+0242             spi=2;
+0243             hax2(spi)=subplot(sprow,spcol,spi);
+0244             hlrms=plot(tvec,rmsbuf);
+0245             title(rmsname);
+0246             xlabel(<span class="string">'Time (s)'</span>);
+0247             ylabel(unit(rmsp,:));
+0248         <span class="keyword">else</span>
+0249             <a href="#_sub2" class="code" title="subfunction doplot(hl,pptmp,tvec);">doplot</a>(hlrms,rmsbuf,tvec);
+0250         <span class="keyword">end</span>;
+0251 
+0252         <span class="keyword">if</span> sum(~isnan(rmsbuf(:,1)))&gt;1
+0253             <span class="comment">%keyboard;</span>
+0254             rmsstat(ilist,:)=[nanmean(rmsbuf(:,1)) nanstd(rmsbuf(:,1)) max(rmsbuf(:,1)) min(rmsbuf(:,1)) prctile(rmsbuf(:,1),myprctile)];
+0255         <span class="keyword">end</span>;
+0256 
+0257         trialn(ilist,:)=[size(rmsbuf,1) sum(~isnan(rmsbuf(:,1)))];
+0258         drawnow;
+0259 
+0260 
+0261         dtbuf=squeeze(pp1(:,extrap,kanallist));
+0262         <span class="keyword">if</span> ilist==1
+0263             spi=3;
+0264             hax2(spi)=subplot(sprow,spcol,spi);
+0265             hldt=plot(tvec,dtbuf);
+0266             title(descriptor(extrap,:));
+0267             xlabel(<span class="string">'Time (s)'</span>);
+0268             ylabel(unit(extrap,:));
+0269         <span class="keyword">else</span>
+0270             <a href="#_sub2" class="code" title="subfunction doplot(hl,pptmp,tvec);">doplot</a>(hldt,dtbuf,tvec);
+0271         <span class="keyword">end</span>;
+0272 
+0273         <span class="keyword">if</span> sum(~isnan(dtbuf(:,1)))&gt;1
+0274             dtstat(ilist,:)=[nanmean(dtbuf(:,1)) nanstd(dtbuf(:,1)) max(dtbuf(:,1)) min(dtbuf(:,1)) prctile(dtbuf(:,1),myprctile)];
+0275         <span class="keyword">end</span>;
+0276 
+0277         drawnow;
+0278 
+0279 
+0280         <span class="comment">%could do for successive pairs in the channel list ?????</span>
+0281         npair=length(kanallist)-1;
+0282         pairleg=cell(npair,1);
+0283         <span class="keyword">if</span> npair
+0284             eucbuf=[];
+0285             <span class="keyword">for</span> ipair=1:npair
+0286                 ch1=kanallist(ipair);
+0287                 ch2=kanallist(ipair+1);
+0288                 euctmp=eucdistn(pp1(:,1:3,ch1),pp1(:,1:3,ch2));
+0289                 eucbuf=[eucbuf euctmp];     <span class="comment">%not very efficient</span>
+0290                 pairleg{ipair}=[int2str(ch1) <span class="string">'-'</span> int2str(ch2)];
+0291             <span class="keyword">end</span>;
+0292             <span class="keyword">if</span> ilist==1
+0293                 spi=4;
+0294                 hax(spi)=subplot(sprow,spcol,spi);
+0295                 hleuc=plot(tvec,eucbuf);
+0296                 hlegeuc=legend(hleuc,pairleg);
+0297 
+0298                 title(<span class="string">'Euclidean distance'</span>);
+0299                 xlabel(<span class="string">'Time (s)'</span>);
+0300                 ylabel(unit(1,:));
+0301             <span class="keyword">else</span>
+0302                 <a href="#_sub2" class="code" title="subfunction doplot(hl,pptmp,tvec);">doplot</a>(hleuc,eucbuf,tvec);
+0303             <span class="keyword">end</span>;
+0304 
+0305             drawnow;
+0306 
+0307             <span class="keyword">if</span> sum(~isnan(eucbuf(:,1)))&gt;1
+0308                 eucstat(ilist,:)=[nanmean(eucbuf(:,1)) nanstd(eucbuf(:,1)) max(eucbuf(:,1)) min(eucbuf(:,1)) prctile(eucbuf(:,1),myprctile)];
+0309             <span class="keyword">end</span>;
+0310 
+0311 
+0312         <span class="keyword">end</span>;
+0313 
+0314         pos1=get(hf1,<span class="string">'position'</span>);
+0315         pos1(1)=10;
+0316         pos2=get(hf2,<span class="string">'position'</span>);
+0317         pos2(1)=10+pos1(3)+10;
+0318         set(hf1,<span class="string">'position'</span>,pos1);
+0319         set(hf2,<span class="string">'position'</span>,pos2);
+0320 
+0321         set([hf1 hf2],<span class="string">'name'</span>,[<span class="string">'Trial '</span> int2str(mytrial)]);
+0322         drawnow;
+0323 
+0324         <span class="keyword">if</span> ~autoflag keyboard; <span class="keyword">end</span>;
+0325         <span class="comment">%        lastfpos=[get(hf1,'position');get(hf2,'position')];</span>
+0326         <span class="comment">%        delete([hf1 hf2]);</span>
+0327     <span class="keyword">end</span>;        <span class="comment">%pbig1 not empty</span>
+0328 <span class="keyword">end</span>;                <span class="comment">%trial list</span>
+0329 <a name="_sub2" href="#_subfunctions" class="code">function doplot(hl,pptmp,tvec);</a>
+0330 nl=length(hl);
+0331 
+0332 <span class="keyword">for</span> ii=1:nl set(hl(ii),<span class="string">'xdata'</span>,tvec,<span class="string">'ydata'</span>,pptmp(:,ii));<span class="keyword">end</span>;
+0333</pre></div>
+<hr><address>Generated on Wed 30-Jan-2013 17:04:26 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of extractNDIsmpte</title>
+  <meta name="keywords" content="extractNDIsmpte">
+  <meta name="description" content="extractNDIsmpte: Extract and save raw SMPTE information from NDI session">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">NDIWAVES</a> &gt; extractNDIsmpte.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for NDIWAVES&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>extractNDIsmpte
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>extractNDIsmpte: Extract and save raw SMPTE information from NDI session</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function extractNDIsmpte( NDIsessionroot,session,smpte_chn_WAVE) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> extractNDIsmpte: Extract and save raw SMPTE information from NDI session
+   Raw smpte code ist saved to smpteRaw.mat in subdir rawdata
+
+ updated $07-Jan-2012$ CGeng</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="SMPTE_dec.html" class="code" title="function [TC, TCstr, E_per] = SMPTE_dec(smpte_audio,SR,fps,debug)">SMPTE_dec</a>	% SMPTE audio decoder v2.4</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="../usertemplates/NDIsingle/do_getsynch_NDI.html" class="code" title="function do_getsynch_NDI">do_getsynch_NDI</a>	DO_GETSYNCH_NDI: Generate synch info from NDI/NIDAQ data structures</li></ul>
+<!-- crossreference -->
+
+
+<h2><a name="_download"></a>DOWNLOAD <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<p><a href="extractNDIsmpte.m">extractNDIsmpte.m</a></p>
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function extractNDIsmpte( NDIsessionroot,session,smpte_chn_WAVE)</a>
+0002 <span class="comment">% extractNDIsmpte: Extract and save raw SMPTE information from NDI session</span>
+0003 <span class="comment">%   Raw smpte code ist saved to smpteRaw.mat in subdir rawdata</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">% updated $07-Jan-2012$ CGeng</span>
+0006 <span class="comment">%</span>
+0007 
+0008 
+0009 NDIWavDirStrRaw = [NDIsessionroot session <span class="string">'/rawdata/MySession_'</span> session <span class="string">'_*.wav'</span> ]
+0010 NDIWavRAW=dir(NDIWavDirStrRaw);
+0011 
+0012 misslistIdx=0;
+0013 missl={};
+0014 
+0015 <span class="keyword">for</span> fnum=1:length(NDIWavRAW)
+0016     
+0017     infile=[NDIsessionroot session <span class="string">'/rawdata/'</span> char(NDIWavRAW(fnum).name)];
+0018     disp([<span class="string">'processing '</span> infile]);
+0019     [dataSYNCH,samplerate,NBITS]=wavread(infile);
+0020     
+0021     <span class="keyword">try</span>,
+0022         [smpteNDIWAVE smpteNDIWAVE_str,errN] = <a href="SMPTE_dec.html" class="code" title="function [TC, TCstr, E_per] = SMPTE_dec(smpte_audio,SR,fps,debug)">SMPTE_dec</a>(dataSYNCH(:,2),samplerate,25,0);
+0023         tMess=sprintf(<span class="string">'problem found in SMPTE CODE, Perc. error = %3.4f\n'</span>,errN);
+0024         assert(errN==0,tMess);
+0025     <span class="keyword">catch</span>,
+0026         misslistIdx=misslistIdx+1;
+0027         missl{misslistIdx,1}=fnum;
+0028         missl{misslistIdx,2}=infile;
+0029         missl{misslistIdx,3}=lasterr;
+0030         smpteNDIWAVE=ones(2,5).*NaN;
+0031         warning(<span class="string">'problem extracting SMPTE!!'</span>)
+0032         warning(lasterr);
+0033     <span class="keyword">end</span>
+0034     
+0035     
+0036     NDIWavRAW(fnum).smpteduration=smpteNDIWAVE(<span class="keyword">end</span>,end)-smpteNDIWAVE(1,end);
+0037     NDIWavRAW(fnum).smpteFirstFrame=smpteNDIWAVE(1,:);
+0038     NDIWavRAW(fnum).smpteLastFrame=smpteNDIWAVE(<span class="keyword">end</span>,:);
+0039     NDIWavRAW(fnum).percenterr=errN;
+0040     NDIWavRAW(fnum).infile=infile;
+0041 <span class="comment">%     NDIWavRAW(fnum)</span>
+0042     disp([<span class="string">'SMPTE dur.: '</span>  num2str(NDIWavRAW(fnum).smpteduration)])
+0043     disp(sprintf(<span class="string">'%s\n'</span>, <span class="string">'done ...'</span>))
+0044 <span class="keyword">end</span>
+0045 
+0046 
+0047 <span class="comment">% sort by date - does this always work?</span>
+0048 [dum,I]=sort(datenum(cat(1,NDIWavRAW.date)));
+0049 NDIWavRAW=NDIWavRAW(I)
+0050 
+0051 outfile=[NDIsessionroot session <span class="string">'/rawdata/smpteRaw'</span>]
+0052 save(outfile,<span class="string">'NDIWavRAW'</span>,<span class="string">'missl'</span>)
+0053 <span class="keyword">end</span>
+0054</pre></div>
+<hr><address>Generated on Wed 30-Jan-2013 17:04:26 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

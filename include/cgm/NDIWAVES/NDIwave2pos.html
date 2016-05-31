@@ -1,0 +1,318 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of NDIwave2pos</title>
+  <meta name="keywords" content="NDIwave2pos">
+  <meta name="description" content="NDIwave2pos(inpath,outpath,sessfile,triallist,sensornames,ndig,filterspecs,idownfac)">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">NDIWAVES</a> &gt; NDIwave2pos.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for NDIWAVES&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>NDIwave2pos
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>NDIwave2pos(inpath,outpath,sessfile,triallist,sensornames,ndig,filterspecs,idownfac)</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function NDIwave2pos(inpath,outpath,sessfile,triallist,sensornames,ndig,filterspecs,idownfac) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> NDIwave2pos(inpath,outpath,sessfile,triallist,sensornames,ndig,filterspecs,idownfac)
+ convert pos files</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="NDIWaveParseSessionFile.html" class="code" title="function sesscfg=NDIWaveParseSessionFile(infile)">NDIWaveParseSessionFile</a>	sessionDir="C:\\ndigital\\collections"</li><li><a href="NDIimport.html" class="code" title="function  varargout=NDIimport(fileToRead1,varargin);">NDIimport</a>	Purpose:  - Import NDI WAVE FILE,</li><li><a href="headervariablesNDI.html" class="code" title="function [descriptor,unit,dimension]=headervariablesNDI(nsensor,sensornames)">headervariablesNDI</a>	</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="../usertemplates/NDIsingle/do_NDIwave2pos.html" class="code" title="function doNDIwave2pos(myigo,myistep)">do_NDIwave2pos</a>	do_NDIwave2pos: Set up sensor naming, data filtering & resampling.</li></ul>
+<!-- crossreference -->
+
+
+<h2><a name="_download"></a>DOWNLOAD <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<p><a href="NDIwave2pos.m">NDIwave2pos.m</a></p>
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function NDIwave2pos(inpath,outpath,sessfile,triallist,sensornames,ndig,filterspecs,idownfac)</a>
+0002 <span class="comment">% NDIwave2pos(inpath,outpath,sessfile,triallist,sensornames,ndig,filterspecs,idownfac)</span>
+0003 <span class="comment">% convert pos files</span>
+0004 
+0005 
+0006 
+0007 
+0008 orifac = pi/180;
+0009 
+0010 <span class="keyword">if</span> nargin &lt; 1,
+0011     eval(<span class="string">'help NDIwave2pos'</span>);
+0012     <span class="keyword">return</span>;
+0013 <span class="keyword">end</span>;
+0014 
+0015 <span class="comment">%clear variables</span>
+0016 ndiguse=4;
+0017 <span class="keyword">if</span> nargin &gt; 5
+0018     ndiguse=ndig;
+0019 <span class="keyword">end</span>
+0020 
+0021 filterspec=[];
+0022 <span class="keyword">if</span> nargin&gt;6
+0023     filterspec=filterspecs;
+0024 <span class="keyword">end</span>;
+0025 
+0026 idown=1;
+0027 <span class="keyword">if</span> nargin&gt;7
+0028     <span class="keyword">if</span> ~isempty(idownfac)
+0029         idown=idownfac;
+0030     <span class="keyword">end</span>;
+0031 <span class="keyword">end</span>;
+0032 
+0033 maxSensor=16;
+0034 nsensorsMin=12;
+0035 
+0036 cofbuf=cell(maxSensor,1);
+0037 filtername=cell(maxSensor,1);
+0038 filtercomment=cell(maxSensor,1);
+0039 filtern=zeros(maxSensor,1);
+0040 
+0041 nfrow=size(filterspec,1);
+0042 
+0043 <span class="keyword">for</span> ifi=1:nfrow
+0044     tmpname=filterspec{ifi,1};
+0045     fchan=filterspec{ifi,2};
+0046     mycoffs=mymatin(tmpname,<span class="string">'data'</span>);
+0047     mycomment=mymatin(tmpname,<span class="string">'comment'</span>);
+0048     myn=length(mycoffs);
+0049     nc=length(fchan);
+0050     <span class="keyword">for</span> ific=1:nc
+0051         mychan=fchan(ific);
+0052         cofbuf{mychan}=mycoffs;
+0053         filtername{mychan}=tmpname;
+0054         filtercomment{mychan}=mycomment;
+0055         filtern(mychan)=myn;
+0056     <span class="keyword">end</span>;
+0057 <span class="keyword">end</span>;
+0058 
+0059 myblanks=(blanks(maxSensor))';
+0060 
+0061 newcomment=[<span class="string">'Input, Output : '</span> inpath <span class="string">' '</span> outpath crlf <span class="keyword">...</span>
+0062     <span class="string">'First/last/n trials: '</span> int2str([triallist(1) triallist(end) length(triallist)]) crlf];
+0063 
+0064 filtercomment=strcat(int2str((1:maxSensor)'),<span class="string">' File: '</span>,filtername,<span class="string">' &quot; '</span>,filtercomment,<span class="string">' &quot;, ncof = '</span>,int2str(filtern));
+0065 newcomment=[newcomment <span class="string">'Filter specs for each channel:'</span> crlf strm2rv(char(filtercomment),crlf) crlf];
+0066 
+0067 <span class="comment">%sessfile=[inpath 'HeadTest0/MySession_56/rawdata/used.cfg'</span>
+0068 disp([<span class="string">'Reading session file '</span> sessfile])
+0069 private.sesscfg=<a href="NDIWaveParseSessionFile.html" class="code" title="function sesscfg=NDIWaveParseSessionFile(infile)">NDIWaveParseSessionFile</a>(sessfile);
+0070 samplerate=private.sesscfg.samplerate;
+0071 
+0072 
+0073 <span class="keyword">for</span> rr=1:length(triallist)
+0074     
+0075     
+0076     <span class="comment">%infile='HeadTest0/MySession_56/MySession_56_007_sync.tsv';</span>
+0077     infile=[inpath, int2str0(triallist(rr),ndiguse),<span class="string">'_sync.tsv'</span>];
+0078     
+0079     samplerate=samplerate/idown;
+0080     disp([<span class="string">'loading '</span> infile <span class="string">' with srate '</span> num2str(samplerate)]) 
+0081     [data,NDIdescr]=<a href="NDIimport.html" class="code" title="function  varargout=NDIimport(fileToRead1,varargin);">NDIimport</a>(infile,<span class="string">'SPHERICAL'</span>);
+0082     
+0083     
+0084     
+0085     <span class="comment">%NDIdescriptor=char(NDIdescr);</span>
+0086     <span class="comment">%II=strmatch('Sensor',NDIdescriptor);</span>
+0087     <span class="comment">%II=II(1:2:end);</span>
+0088     <span class="comment">%nsensors=length(II);</span>
+0089     <span class="comment">%descriptor=NDIdescriptor([II(1)+2:II(1)+8],:);</span>
+0090     
+0091     <span class="comment">%data=nan(size(NDIdata,1), 7, nsensors);</span>
+0092     <span class="comment">%data=single(data);</span>
+0093     
+0094     
+0095     <span class="comment">%if(size(NDIdescriptor,1)&gt;size(NDIdata,2))</span>
+0096     <span class="comment">%    NDIdata(:, size(NDIdata,2)+1:size(NDIdescriptor,1)) = NaN;</span>
+0097     <span class="comment">%end</span>
+0098     
+0099 <span class="comment">%     for ll=1:nsensors</span>
+0100 <span class="comment">%         datIdx=[II(ll)+2:II(ll)+8];</span>
+0101 <span class="comment">%         NDIdescriptor(datIdx,:);</span>
+0102 <span class="comment">%         tmpdat=NDIdata(:,datIdx);</span>
+0103 <span class="comment">%</span>
+0104 <span class="comment">%         % [r1 r2 r3] = quat2angle( tmpdat(:,4:7) );</span>
+0105 <span class="comment">%         % Mangles = quat2eulerAERO( tmpdat(:,4:7) );</span>
+0106 <span class="comment">%         datLL=zeros(size(tmpdat,1),4);</span>
+0107 <span class="comment">%         for mm=1:size(tmpdat,1)</span>
+0108 <span class="comment">%             rotquat=tmpdat(mm,4:7);</span>
+0109 <span class="comment">%             trans=tmpdat(mm,1:3);</span>
+0110 <span class="comment">%             %quat2H</span>
+0111 <span class="comment">%             H3x3=quat2H(rotquat(1),rotquat(2),rotquat(3),rotquat(4));</span>
+0112 <span class="comment">%             % H4x4=makerotmat4x4(H3x3,trans,'post');</span>
+0113 <span class="comment">%             % datLL=[trans 1]*(H4x4)'</span>
+0114 <span class="comment">%             H4x4=makerotmat4x4(H3x3,trans,'pre');</span>
+0115 <span class="comment">%             datLL(mm,:)=[(H4x4)*[trans 1]']';</span>
+0116 <span class="comment">%         end</span>
+0117 <span class="comment">%</span>
+0118 <span class="comment">%         [theta,phi,r] = cart2sph(datLL(:,1),datLL(:,2),datLL(:,3));</span>
+0119 <span class="comment">%         data(:,4,ll)=(180/pi).*phi;</span>
+0120 <span class="comment">%         data(:,5,ll)=(180/pi).*theta;</span>
+0121 <span class="comment">%</span>
+0122 <span class="comment">%</span>
+0123 <span class="comment">%         %whos data phi NDIdata datLL</span>
+0124 <span class="comment">%</span>
+0125 <span class="comment">%</span>
+0126 <span class="comment">%         %[theta,phi,r] = cart2sph(r1,r2,r3);</span>
+0127 <span class="comment">%</span>
+0128 <span class="comment">%         data(:,1:3,ll)=tmpdat(:,1:3);</span>
+0129 <span class="comment">%         %         data(:,4,ll)=(180/pi).*phi;</span>
+0130 <span class="comment">%         %         data(:,5,ll)=(180/pi).*theta;</span>
+0131 <span class="comment">%</span>
+0132 <span class="comment">%</span>
+0133 <span class="comment">%</span>
+0134 <span class="comment">%</span>
+0135 <span class="comment">%         % nanvar((180/pi).*THETA)</span>
+0136 <span class="comment">%         % nanvar((180/pi).*PHI)</span>
+0137 <span class="comment">%</span>
+0138 <span class="comment">%</span>
+0139 <span class="comment">%         %data(:,:,ll)=tmpdat;</span>
+0140 <span class="comment">%     end</span>
+0141 <span class="comment">%</span>
+0142     ndatin=size(data,1);    
+0143     ndat=length(1:idown:ndatin);      <span class="comment">%assume decifir behaves like this</span>
+0144     
+0145     nsensors=size(data,3);
+0146     dataout=ones(ndat,7,nsensors)*NaN;
+0147     dataout(:,6,:)=data(:,6,:);
+0148     s2pad=nsensorsMin - nsensors;
+0149     sensornamesuse=sensornames;
+0150     <span class="keyword">if</span> (nsensorsMin&gt;nsensors),
+0151         <span class="keyword">for</span> idxPad=1:s2pad
+0152             sensornamesuse=str2mat(sensornamesuse,[<span class="string">'unused'</span> num2str(idxPad) <span class="string">''</span>]);
+0153         <span class="keyword">end</span>
+0154         data(:,:,size(data,3)+1 : nsensorsMin)=NaN;
+0155         <span class="comment">%warning('NaNs padded!!');</span>
+0156         nsensors=nsensorsMin;
+0157     <span class="keyword">end</span>
+0158     
+0159     
+0160     ndimSph=5;
+0161     ndimCart=6;
+0162     
+0163     <span class="keyword">for</span> isensor=1:nsensors
+0164         tmpdataF=data(:,1:ndimSph,isensor);
+0165         pos1=tmpdataF(:,1:3);
+0166         ori1=tmpdataF(:,4:5)*orifac; <span class="comment">% das muss deg nach rad sein, da matlab rad fuer sph2cart benoetigt.</span>
+0167                                      <span class="comment">%  orifac ist oben als pi/180 definiert;</span>
+0168                                      <span class="comment">%deg2rad: (pi/180) *alpha;</span>
+0169         <span class="comment">% convert to orientation</span>
+0170         [ox1,oy1,oz1]=sph2cart(ori1(:,1),ori1(:,2),1);
+0171 <span class="comment">%         if strcmp('TB',deblank(sensornames(isensor,:)))</span>
+0172 <span class="comment">%             keyboard</span>
+0173 <span class="comment">%         end</span>
+0174         d1=[pos1 ox1 oy1 oz1];
+0175 
+0176         <span class="keyword">if</span> filtern(isensor)
+0177             mycoff=cofbuf{isensor};
+0178             ncof=length(mycoff);
+0179             <span class="comment">%The criterion here for having enough data to filter is more stringent than</span>
+0180             <span class="comment">%that used by decifir</span>
+0181             <span class="keyword">if</span> ndatin&gt;ncof
+0182                 <span class="keyword">for</span> idim=1:ndimCart
+0183                     d1(:,idim)=decifir(mycoff,d1(:,idim));
+0184                 <span class="keyword">end</span>;
+0185                 
+0186             <span class="keyword">else</span>
+0187                 disp([<span class="string">'Sensor '</span> int2str(isensor) <span class="string">' : Not enough data for filtering'</span>]);
+0188             <span class="keyword">end</span>;
+0189             <span class="comment">% Convert back to orientations</span>
+0190             [d1(:,4),d1(:,5),dodo]=cart2sph(d1(:,4),d1(:,5),d1(:,6));
+0191             d1(:,4:5)=d1(:,4:5)/orifac;      <span class="comment">%convert back to degrees if necessary</span>
+0192             dataout(:,1:ndimSph,isensor)=d1(1:idown:<span class="keyword">end</span>,1:ndimSph);
+0193         <span class="keyword">else</span>
+0194             <span class="comment">% Ist das ok? Sollte man nicht wirkliches decimate nehmen?</span>
+0195             dataout(:,:,isensor)=data(1:idown:<span class="keyword">end</span>,:,isensor);
+0196         <span class="keyword">end</span>;
+0197     <span class="keyword">end</span>
+0198     
+0199     
+0200     data=dataout;
+0201     
+0202     <span class="comment">%unit=str2mat('mm','mm','mm');</span>
+0203     
+0204     <span class="comment">% ndim=3;</span>
+0205     <span class="comment">% doamp=0;</span>
+0206     <span class="comment">% dd=cell(ndim,1);</span>
+0207     <span class="comment">% dd{1}='Time';</span>
+0208     <span class="comment">% dd{2}='Coordinate';</span>
+0209     <span class="comment">% if doamp dd{2}='Transmitter'; end;</span>
+0210     <span class="comment">% sensname='Sensor';</span>
+0211     <span class="comment">% dd{3}=sensname;</span>
+0212     
+0213     <span class="comment">% dimension.descriptor=char(dd);</span>
+0214     <span class="comment">% uu=(blanks(ndim))';</span>
+0215     <span class="comment">% dimension.unit=uu;</span>
+0216     
+0217     <span class="comment">% posfile='Z:/data/ema/recordeddata/speckletest1/ampsfilt/kalmanrt/workpos/0001.pos'</span>
+0218     <span class="comment">% Example of Phil rawpos file:</span>
+0219     
+0220     <span class="comment">% aa=cell(ndim,1);</span>
+0221     <span class="comment">% aa{1}=[];</span>
+0222     <span class="comment">% aa{2}=descriptor;</span>
+0223     
+0224     <span class="comment">% ss=strcat(sensname,int2str((1:nsensors)'));</span>
+0225     <span class="comment">% ss=char(strrep(cellstr(ss),' ','0'));</span>
+0226     <span class="comment">% aa{3}=ss;</span>
+0227     <span class="comment">% dimension.unit=uu;</span>
+0228     <span class="comment">% dimension.axis=aa;</span>
+0229     
+0230     <span class="comment">%rawp=load('Z:/data/ema/recordeddata/speckletest1/ampsfilt/kalmanus/rawposm/0004.mat');</span>
+0231    
+0232 [descriptor,unit,dimension]=<a href="headervariablesNDI.html" class="code" title="function [descriptor,unit,dimension]=headervariablesNDI(nsensor,sensornames)">headervariablesNDI</a>(size(sensornamesuse,1),sensornamesuse);
+0233     
+0234     comment=framecomment(<span class="string">'NDIwave2mat'</span>,mfilename);
+0235     
+0236     outfilename=[outpath, int2str0(triallist(rr),ndiguse)];
+0237     disp([<span class="string">'writing '</span> outfilename])
+0238     save(outfilename,<span class="string">'comment'</span>,<span class="string">'data'</span>,<span class="string">'descriptor'</span>,<span class="string">'dimension'</span>,<span class="string">'private'</span>,<span class="string">'samplerate'</span>,<span class="string">'unit'</span> )
+0239 <span class="keyword">end</span>
+0240 
+0241 
+0242 <span class="comment">% MAKEREFOBJN erzeugt virtuallen Koordinaten selbst:</span>
+0243 <span class="comment">% anglefac=pi/180;</span>
+0244 <span class="comment">% [data,descriptor,unit,dimension,sensorsin]=loadpos_sph2cartm(matfile);</span>
+0245 <span class="comment">% td=datax([getfield(P,[sname '_px']) getfield(P,[sname '_py']) getfield(P,[sname '_pz'])]);</span>
+0246 <span class="comment">% tv=datax([getfield(P,[sname '_ox']) getfield(P,[sname '_oy']) getfield(P,[sname '_oz'])]);</span>
+0247 <span class="comment">% data3v(ii,:)=td+(tv*vdistance);</span>
+0248 
+0249 <span class="comment">% RIGIDBODYANA(getregemat) AUCH:</span>
+0250 <span class="comment">%    tmpo=bigbuf(:,[P.orix P.oriy P.oriz],refsensindex(ii));</span>
+0251 <span class="comment">%         tmpd(:,:,ii)=tmpd(:,:,ii)+(tmpo*vdistance);</span>
+0252 
+0253 <span class="comment">% Beim Abspeichern werden die Daten dann als ox oy oz gelassen</span>
+0254 
+0255 <span class="comment">%</span>
+0256 <span class="comment">% rawp =</span>
+0257 <span class="comment">%</span>
+0258 <span class="comment">%        private: [1x1 struct]   - enhaelt nur Startwerte</span>
+0259 <span class="comment">%     samplerate: 200            - samplerate</span>
+0260 <span class="comment">%     descriptor: [7x7 char]</span>
+0261 <span class="comment">%           unit: [7x7 char]</span>
+0262 <span class="comment">%      dimension: [1x1 struct]</span>
+0263 <span class="comment">%        comment: [1x1194 char]</span>
+0264 <span class="comment">%           data: [64338x7x12 single]</span>
+0265 
+0266 
+0267 
+0268 
+0269</pre></div>
+<hr><address>Generated on Wed 30-Jan-2013 17:04:26 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

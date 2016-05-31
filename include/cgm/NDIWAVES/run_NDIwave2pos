@@ -1,0 +1,40 @@
+#! /bin/bash
+# script to run several instances of MATLAB position estimation of 
+# do_tapad_ds in the background - possible only under UNIX
+# ALL matlab processes can be killed with 
+#  pgrep MATLAB | grep -v $$ | xargs kill
+# So use with care! 
+# would be nice to have more control over zombies. 
+# bash pid
+# echo $$
+# bash4$ echo $BASHPID
+# ps ax | grep bash4
+
+
+#mkdir logs
+
+# 1)change to appropriate directory
+#cd /projects/ling/phopho/stimos/2012_Stimos_Edata/Stimos_Edata_vp01/
+# cd /projects/ling/phopho/stimos/2012_Stimos_Gdata/jbClustDat05/
+#cd /projects/ling/phopho/stimos/EMAaccuracy/NDI/01SlidingBoard/
+cd /projects/ling/phopho/stimos/EMAaccuracy/NDI/01Circal
+pwd
+
+
+# 2)  HOW MANY CORES
+NPROC=16
+
+
+# 4) Want to skip some trials at the beginning? 
+# Do not skip any by default:
+trialskip=0
+#trialskip=5
+
+
+
+for i in  `seq 1 $NPROC`; do
+    echo starting process $i with 
+    starttrial=$(($trialskip+$i))
+    echo  matbg '"'"do_NDIwave2pos($starttrial,$NPROC)"'"' NDIwave2pos_log$i  
+    eval  matbg '"'"do_NDIwave2pos($starttrial,$NPROC)"'"' NDIwave2pos_log$i 
+done

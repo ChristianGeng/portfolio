@@ -1,0 +1,270 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of do_comppos_a_f_cg</title>
+  <meta name="keywords" content="do_comppos_a_f_cg">
+  <meta name="description" content="function do_comppos_a_f(basepath,altpath,triallist,kanallist,comp_sensor,auto_flag,diaryfile)">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">NDIWAVES</a> &gt; do_comppos_a_f_cg.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for NDIWAVES&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>do_comppos_a_f_cg
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function do_comppos_a_f(basepath,altpath,triallist,kanallist,comp_sensor,auto_flag,diaryfile)</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function do_comppos_a_f_cg(basepath,altpath,triallist,kanallist,comp_sensor,auto_flag,diaryfile) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> function do_comppos_a_f(basepath,altpath,triallist,kanallist,comp_sensor,auto_flag,diaryfile)
+ DO_COMPPOS_A_F Auxiliary function to run comppos_fm_cg and plot statistics
+ do_comppos_a_f: Version 31.3.09
+
+   Syntax
+       First 4 arguments are compulsory
+           basepath: Path (with backslash) with main position data
+           altpath: Alternative path, to allow comparison of two sets of
+                data processed in different ways. If not required set to empty
+           trialllist, kanallist: Row vectors, list of trials and sensors
+                to show
+           comp_sensor: Comparison sensor. Will be displayed with each
+                sensor in kanallist, and euclidean distance between the two
+                will also be displayed. Set to empty if not required and if
+                auto_flag etc. need to be specified
+           auto_flag: If present and true, pause after each trial. Otherwise, only
+                pause between sensors (==1), and not at all (==2)
+           diaryfile: Name of text file to store the calculated
+           statistics. Mainly for use by AMPVSPOSAMPA. See also PARSESTATS
+
+   Notes
+       Some overlap in functionality with SHOW_TRIALOX. But show_trialox does
+       not allow use of alternative path or comparison sensor. Note also
+       that the statistics calculated are not quite the same!
+       Possible extensions: choice of coordinates to show; choice of
+       statistics
+
+   See Also
+       <a href="comppos_fm_cg.html" class="code" title="function [rmsstat,tangstat,eucstat,dtstat,trialn,costat]=comppos_f(basepath,altpath,triallist,kanallistb,autoflag,colist1,colist2)">comppos_fm_cg</a> The function that actually does most of the work
+       SHOW_TRIALOX, PARSESTATS
+
+   Updates
+       5.08 Plot of total and valid data per trial
+        3.09 no stopping at all in keyboard mode if autorun==2
+        3. 09 diary  output modified for easier parsing by parsestats
+            If diary in use, then figures also stored</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="comppos_fm_cg.html" class="code" title="function [rmsstat,tangstat,eucstat,dtstat,trialn,costat]=comppos_f(basepath,altpath,triallist,kanallistb,autoflag,colist1,colist2)">comppos_fm_cg</a>	COMPPOS_FM Compare coordinates and additional parameters like rms between sensors or processing versions</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="../usertemplates/NDIsingle/do_do_comppos.html" class="code" title="">do_do_comppos</a>	do_do_comppos.m Configurable EMA data display, version for NDI data</li></ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="#_sub1" class="code">functionname=</a></li><li><a href="#_sub2" class="code">function showstat(x,triallist,statpic,mytitle,isubp,kanalnum);</a></li></ul>
+<h2><a name="_download"></a>DOWNLOAD <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<p><a href="do_comppos_a_f_cg.m">do_comppos_a_f_cg.m</a></p>
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function do_comppos_a_f_cg(basepath,altpath,triallist,kanallist,comp_sensor,auto_flag,diaryfile)</a>
+0002 <span class="comment">% function do_comppos_a_f(basepath,altpath,triallist,kanallist,comp_sensor,auto_flag,diaryfile)</span>
+0003 <span class="comment">% DO_COMPPOS_A_F Auxiliary function to run comppos_fm_cg and plot statistics</span>
+0004 <span class="comment">% do_comppos_a_f: Version 31.3.09</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">%   Syntax</span>
+0007 <span class="comment">%       First 4 arguments are compulsory</span>
+0008 <span class="comment">%           basepath: Path (with backslash) with main position data</span>
+0009 <span class="comment">%           altpath: Alternative path, to allow comparison of two sets of</span>
+0010 <span class="comment">%                data processed in different ways. If not required set to empty</span>
+0011 <span class="comment">%           trialllist, kanallist: Row vectors, list of trials and sensors</span>
+0012 <span class="comment">%                to show</span>
+0013 <span class="comment">%           comp_sensor: Comparison sensor. Will be displayed with each</span>
+0014 <span class="comment">%                sensor in kanallist, and euclidean distance between the two</span>
+0015 <span class="comment">%                will also be displayed. Set to empty if not required and if</span>
+0016 <span class="comment">%                auto_flag etc. need to be specified</span>
+0017 <span class="comment">%           auto_flag: If present and true, pause after each trial. Otherwise, only</span>
+0018 <span class="comment">%                pause between sensors (==1), and not at all (==2)</span>
+0019 <span class="comment">%           diaryfile: Name of text file to store the calculated</span>
+0020 <span class="comment">%           statistics. Mainly for use by AMPVSPOSAMPA. See also PARSESTATS</span>
+0021 <span class="comment">%</span>
+0022 <span class="comment">%   Notes</span>
+0023 <span class="comment">%       Some overlap in functionality with SHOW_TRIALOX. But show_trialox does</span>
+0024 <span class="comment">%       not allow use of alternative path or comparison sensor. Note also</span>
+0025 <span class="comment">%       that the statistics calculated are not quite the same!</span>
+0026 <span class="comment">%       Possible extensions: choice of coordinates to show; choice of</span>
+0027 <span class="comment">%       statistics</span>
+0028 <span class="comment">%</span>
+0029 <span class="comment">%   See Also</span>
+0030 <span class="comment">%       comppos_fm_cg The function that actually does most of the work</span>
+0031 <span class="comment">%       SHOW_TRIALOX, PARSESTATS</span>
+0032 <span class="comment">%</span>
+0033 <span class="comment">%   Updates</span>
+0034 <span class="comment">%       5.08 Plot of total and valid data per trial</span>
+0035 <span class="comment">%        3.09 no stopping at all in keyboard mode if autorun==2</span>
+0036 <span class="comment">%        3. 09 diary  output modified for easier parsing by parsestats</span>
+0037 <span class="comment">%            If diary in use, then figures also stored</span>
+0038 
+0039 <a name="_sub1" href="#_subfunctions" class="code">functionname=</a><span class="string">'do_comppos_a_f: Version 31.3.09'</span>;
+0040 
+0041 
+0042 compsensor=[];
+0043 <span class="keyword">if</span> nargin&gt;4 compsensor=comp_sensor; <span class="keyword">end</span>;
+0044 
+0045 autoflag=1;
+0046 <span class="keyword">if</span> nargin&gt;5 autoflag=auto_flag; <span class="keyword">end</span>;
+0047 
+0048 dodiary=0;
+0049 <span class="keyword">if</span> nargin&gt;6
+0050     <span class="keyword">if</span> ~isempty(diaryfile)
+0051         <span class="keyword">try</span>
+0052             diary(diaryfile);
+0053             diary off;
+0054             dodiary=1;
+0055             figbase=strrep(diaryfile,<span class="string">'.txt'</span>,<span class="string">''</span>);
+0056             figbase=strrep(figbase,pathchar,<span class="string">'_'</span>);    <span class="comment">%should nor normally be needed</span>
+0057             figdir=<span class="string">'figs'</span>;
+0058             <span class="keyword">if</span> ~exist(figdir,<span class="string">'dir'</span>) mkdir(figdir); <span class="keyword">end</span>;
+0059 
+0060         
+0061         <span class="keyword">catch</span>
+0062             disp(<span class="string">'Unable to open diary file'</span>);
+0063         <span class="keyword">end</span>;
+0064     <span class="keyword">end</span>;
+0065 <span class="keyword">end</span>;
+0066 
+0067 
+0068 statpic=[1 5 6];        <span class="comment">%mean, 2.5 and 97.5%ile</span>
+0069 
+0070 hfstats=figure;
+0071 hrpos=get(0,<span class="string">'screensize'</span>);
+0072 <span class="comment">%keyboard;</span>
+0073 statspos=get(hfstats,<span class="string">'position'</span>);
+0074 statspos(1)=hrpos(3)/2;
+0075 statspos(2)=hrpos(4)*0.05;
+0076 set(hfstats,<span class="string">'position'</span>,statspos);
+0077 
+0078 <span class="comment">%commpos_fm expects column vector (as additional columns can be used to</span>
+0079 <span class="comment">%subdivide trial</span>
+0080 <span class="keyword">if</span> size(triallist,2)&gt;size(triallist,1) triallist=triallist'; <span class="keyword">end</span>;
+0081 
+0082 
+0083 
+0084 
+0085 <span class="comment">%colist=[1 2 3];</span>
+0086 <span class="comment">%standard</span>
+0087 colist=[1 2 3 6];       <span class="comment">%pos x/y/z and ori z</span>
+0088 colist2=[7 8];          <span class="comment">%rms/parameter 7</span>
+0089 
+0090 <span class="keyword">for</span> kanallistb=kanallist
+0091     
+0092     <span class="comment">%    [rmsstat,tangstat,eucstat,dtstat,trialn,posstat,oristat]=comppos_f(basepath,altpath,triallist,kanallistb,autoflag,colist);</span>
+0093     <span class="comment">%with comparison</span>
+0094     [rmsstat,tangstat,eucstat,dtstat,trialn,costat]=<a href="comppos_fm_cg.html" class="code" title="function [rmsstat,tangstat,eucstat,dtstat,trialn,costat]=comppos_f(basepath,altpath,triallist,kanallistb,autoflag,colist1,colist2)">comppos_fm_cg</a>(basepath,altpath,triallist,[kanallistb compsensor],autoflag,colist,colist2);
+0095     
+0096     
+0097     <span class="comment">%pause;</span>
+0098     close all
+0099     <span class="keyword">if</span> length(triallist)&gt;1
+0100         <span class="keyword">if</span> dodiary diary on; <span class="keyword">end</span>;
+0101         disp(<span class="string">'========='</span>);
+0102         disp([<span class="string">'Sensor '</span> int2str(kanallistb)])
+0103         disp(<span class="string">'========='</span>);
+0104         disp([<span class="string">'Total data per trial (max/min/mean): '</span> int2str([max(trialn(:,1)) min(trialn(:,1))]) <span class="string">' '</span> num2str(mean(trialn(:,1)))]);
+0105         disp([<span class="string">'Valid data per trial (max/min/mean): '</span> int2str([max(trialn(:,2)) min(trialn(:,2))]) <span class="string">' '</span> num2str(mean(trialn(:,2)))]);
+0106         titstring=[<span class="string">'Sensor '</span> int2str(kanallistb)];
+0107 
+0108         hftrialn=figure(<span class="string">'position'</span>,statspos);
+0109         plot(triallist(:),trialn,<span class="string">'linestyle'</span>,<span class="string">'-'</span>,<span class="string">'marker'</span>,<span class="string">'.'</span>)
+0110 
+0111         title(<span class="string">'Total and valid data per trial'</span>);
+0112         xlabel(<span class="string">'Trial no.'</span>);
+0113         set(hftrialn,<span class="string">'name'</span>,titstring);
+0114         <span class="comment">%pause</span>
+0115         hfstats=figure(<span class="string">'position'</span>,statspos);
+0116         <a href="#_sub2" class="code" title="subfunction showstat(x,triallist,statpic,mytitle,isubp,kanalnum);">showstat</a>(rmsstat,triallist,statpic,<span class="string">'rms'</span>,1,kanallistb);
+0117         <span class="comment">%pause</span>
+0118         <a href="#_sub2" class="code" title="subfunction showstat(x,triallist,statpic,mytitle,isubp,kanalnum);">showstat</a>(tangstat,triallist,statpic,<span class="string">'tangential velocity'</span>,2,kanallistb);
+0119         <span class="comment">%pause</span>
+0120         <a href="#_sub2" class="code" title="subfunction showstat(x,triallist,statpic,mytitle,isubp,kanalnum);">showstat</a>(eucstat,triallist,statpic,<span class="string">'euclidean distance'</span>,3,kanallistb);
+0121         <a href="#_sub2" class="code" title="subfunction showstat(x,triallist,statpic,mytitle,isubp,kanalnum);">showstat</a>(dtstat,triallist,statpic,<span class="string">'parameter 7'</span>,4,kanallistb);
+0122         <span class="keyword">if</span> ~isempty(compsensor)
+0123             titstring=[titstring <span class="string">' (Comp. Sensor '</span> int2str(compsensor) <span class="string">')'</span>];
+0124         <span class="keyword">end</span>;
+0125         set(hfstats,<span class="string">'name'</span>,titstring);
+0126         disp(<span class="string">'do_comppos_a_f: See behind stats fig for trial n. Type ''return'' to continue'</span>);
+0127         <span class="keyword">if</span> autoflag&lt;2 keyboard; <span class="keyword">end</span>;
+0128         <span class="comment">%pause</span>
+0129         <span class="comment">%close all</span>
+0130         <span class="keyword">if</span> dodiary 
+0131         
+0132             figname=[figdir pathchar figbase <span class="string">'_trialstats_'</span> int2str(kanallistb) <span class="string">'.fig'</span>];
+0133             saveas(hfstats,figname,<span class="string">'fig'</span>);
+0134             figname=[figdir pathchar figbase <span class="string">'_trialn_'</span> int2str(kanallistb) <span class="string">'.fig'</span>];
+0135             saveas(hftrialn,figname,<span class="string">'fig'</span>);
+0136             
+0137             
+0138             diary off; 
+0139         
+0140         
+0141         <span class="keyword">end</span>;
+0142     <span class="keyword">end</span>;
+0143 <span class="keyword">end</span>;
+0144 
+0145 <a name="_sub2" href="#_subfunctions" class="code">function showstat(x,triallist,statpic,mytitle,isubp,kanalnum);</a>
+0146 sdfac=2;
+0147 <span class="comment">%myprctile=[2.5 97.5];</span>
+0148 myprctile=[5 95];
+0149 <span class="comment">%prctile(eucbuf(:,1),myprctile)</span>
+0150 
+0151 disp(mytitle);
+0152 
+0153 nstat=length(statpic);
+0154 
+0155 tt=triallist(:);
+0156 tt=repmat(tt,[1 nstat]);
+0157 
+0158 xx=x(:,statpic);
+0159 <span class="comment">%figure;</span>
+0160 subplot(2,2,isubp)
+0161 <span class="comment">%plot(tt,xx);</span>
+0162 <span class="comment">%hold on;</span>
+0163 plot(tt,xx,<span class="string">'linestyle'</span>,<span class="string">'-'</span>,<span class="string">'marker'</span>,<span class="string">'.'</span>);
+0164 
+0165 title(mytitle);
+0166 xlabel(<span class="string">'Trial no.'</span>);
+0167 <span class="comment">%should get y units from somewhere</span>
+0168 
+0169 xq=nanmean(xx);
+0170 <span class="keyword">if</span> any(isnan(xq)) <span class="keyword">return</span>; <span class="keyword">end</span>;
+0171 <span class="comment">%sd=nanstd(xx)*sdfac;</span>
+0172 <span class="comment">%lolim=xq-sd;</span>
+0173 <span class="comment">%hilim=xq+sd;</span>
+0174 xprct=prctile(xx,myprctile);
+0175 lolim=xprct(1,:);
+0176 hilim=xprct(2,:);
+0177 disp([<span class="string">'lolim mean hilim (columns) of stats '</span> int2str(statpic) <span class="string">' (rows)'</span>]);
+0178 allvals=([lolim;xq;hilim])';
+0179 disp(allvals);
+0180 disp([<span class="string">'Suggested range |'</span> mytitle <span class="string">'('</span> int2str(kanalnum) <span class="string">') : '</span> num2str([min(allvals(:,1)) max(allvals(:,3))])]);
+0181 <span class="comment">%keyboard;</span>
+0182 xsd=nanmean(x(:,2));
+0183 sdprct=prctile(x(:,2),myprctile);
+0184 disp(<span class="string">'lolim mean hilim of trial sds'</span>);
+0185 disp([sdprct(1) xsd sdprct(2)]);</pre></div>
+<hr><address>Generated on Wed 30-Jan-2013 17:04:26 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

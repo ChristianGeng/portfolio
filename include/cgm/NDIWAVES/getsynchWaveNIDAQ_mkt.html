@@ -1,0 +1,244 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of getsynchWaveNIDAQ_mkt</title>
+  <meta name="keywords" content="getsynchWaveNIDAQ_mkt">
+  <meta name="description" content="Trial number might be incorrect">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">NDIWAVES</a> &gt; getsynchWaveNIDAQ_mkt.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for NDIWAVES&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>getsynchWaveNIDAQ_mkt
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Trial number might be incorrect</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function getsynchWaveNIDAQ_mkt(daqFile,smpte_chn_NI,NDIsessionroot,smpte_chn_WAVE,session,filelist,sessfile) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Trial number might be incorrect
+ so far this is  a version for just one large DAQ file
+  smpte_chn_NI: channel on the NI daq file</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="NDIWaveParseSessionFile.html" class="code" title="function sesscfg=NDIWaveParseSessionFile(infile)">NDIWaveParseSessionFile</a>	sessionDir="C:\\ndigital\\collections"</li><li><a href="NDIimport.html" class="code" title="function  varargout=NDIimport(fileToRead1,varargin);">NDIimport</a>	Purpose:  - Import NDI WAVE FILE,</li><li><a href="SMPTE_dec.html" class="code" title="function [TC, TCstr, E_per] = SMPTE_dec(smpte_audio,SR,fps,debug)">SMPTE_dec</a>	% SMPTE audio decoder v2.4</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="#_sub1" class="code">functionname=[rmextension(mfilename),</a></li></ul>
+<h2><a name="_download"></a>DOWNLOAD <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<p><a href="getsynchWaveNIDAQ_mkt.m">getsynchWaveNIDAQ_mkt.m</a></p>
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function getsynchWaveNIDAQ_mkt(daqFile,smpte_chn_NI,NDIsessionroot,smpte_chn_WAVE,session,filelist,sessfile)</a>
+0002 <span class="comment">% Trial number might be incorrect</span>
+0003 <span class="comment">% so far this is  a version for just one large DAQ file</span>
+0004 <span class="comment">%  smpte_chn_NI: channel on the NI daq file</span>
+0005 
+0006 cgdebug=0;
+0007 timingDebug=1;
+0008 
+0009 smptedescr=str2mat(<span class="string">'hh'</span>,<span class="string">'mm'</span>,<span class="string">'ss'</span>,<span class="string">'ff'</span>,<span class="string">'audio_time'</span>);
+0010 
+0011 namestr=<span class="string">''</span>;
+0012 <a name="_sub1" href="#_subfunctions" class="code">functionname=[rmextension(mfilename), </a><span class="string">': Version 20-Oct-2011'</span>];
+0013 
+0014 disp(sessfile)
+0015 private.sesscfg=<a href="NDIWaveParseSessionFile.html" class="code" title="function sesscfg=NDIWaveParseSessionFile(infile)">NDIWaveParseSessionFile</a>(sessfile);
+0016 
+0017 cutname=[daqFile <span class="string">'syncCh'</span>,num2str(smpte_chn_NI)];
+0018 namestr=[namestr <span class="string">'Output cut file: '</span> cutname crlf];
+0019 
+0020 disp (functionname);
+0021 maxcut=20000;
+0022 [abint,abnoint,abscalar,abnoscalar]=abartdef;
+0023 
+0024 timdat=ones(maxcut,4)*NaN;
+0025 timdat(:,3)=0;
+0026 maxtlen=length(int2str(maxcut));
+0027 cutlabel=setstr(zeros(maxcut,maxtlen));
+0028 
+0029 data=nan(length(filelist),4);
+0030 data(:,3)=0;
+0031 totalcuts=0;
+0032 
+0033 
+0034 <span class="keyword">for</span> fnum=filelist
+0035     
+0036     <span class="comment">%% ANALYSIS OF NATIONAL INSTRUMENTS NIDAQ SMPTE starts here:</span>
+0037     
+0038     NIDAQ=load([daqFile int2str0vec(filelist(fnum))]);
+0039     private.NIDAQ=NIDAQ.private;
+0040     disp(<span class="string">'decoding NIDAQ file ...'</span>)
+0041     NILEN=length(NIDAQ.DAQData)/NIDAQ.srate;
+0042     disp([<span class="string">' NIDAQ length (sec.) : '</span> num2str(NILEN)]);
+0043     <span class="comment">% keyboard</span>
+0044     <span class="comment">% [smpte_NI smpte_str_NI,errN_NI] = SMPTE_dec(NIDAQ.DAQData(:,smpte_chn_NI),NIDAQ.srate,25,0);</span>
+0045     soundout=soundsc_cg(NIDAQ.DAQData(:,smpte_chn_NI),NIDAQ.srate);
+0046     [smpte_NI smpte_str_NI,errN_NI] = <a href="SMPTE_dec.html" class="code" title="function [TC, TCstr, E_per] = SMPTE_dec(smpte_audio,SR,fps,debug)">SMPTE_dec</a>(soundout,NIDAQ.srate,25,0);
+0047     
+0048     <span class="comment">% soundout=soundsc_cg(NIDAQ.DAQData(:,smpte_chn_NI),NIDAQ.srate);</span>
+0049     <span class="comment">% [smpte_NI smpte_str_NI,errN_NI] = SMPTE_dec(soundout,NIDAQ.srate,25,0);</span>
+0050     
+0051     smpteDur_NI=smpte_NI(<span class="keyword">end</span>,end)-smpte_NI(1,end);
+0052     <span class="keyword">if</span> timingDebug
+0053         disp([ <span class="string">'last SMPTE frame at '</span> num2str(smpte_NI(<span class="keyword">end</span>,end))])
+0054         disp([ <span class="string">'first SMPTE frame at '</span> num2str(smpte_NI(1,end))])
+0055         <span class="comment">% Das ist die Dauer der Art Daten</span>
+0056         disp([<span class="string">'length of Code according to SMPTE NI capture  ( last - first ) '</span> num2str(smpteDur_NI)])
+0057     <span class="keyword">end</span>
+0058     
+0059     diary getsynch_NIDAQ.log
+0060     
+0061     <span class="keyword">if</span> cgdebug
+0062         daqinfo = daqread(daqFile,<span class="string">'info'</span>);
+0063         adlink_chn=cat(1,daqinfo.ObjInfo.Channel.Index)';
+0064         adlink_desc=char(daqinfo.ObjInfo.Channel.ChannelName);
+0065         adlink_unit=daqinfo.ObjInfo.Channel.Units;
+0066         <span class="comment">% Scale</span>
+0067         adlink_signalzero=cat(1,daqinfo.ObjInfo.Channel.NativeOffset);
+0068     <span class="keyword">end</span>
+0069     
+0070     lastdat=0;
+0071     nchanin=NIDAQ.nchan;
+0072     
+0073     sftemp=NIDAQ.srate;
+0074     dectemp=0;
+0075     sfchannel=sftemp/(dectemp+1);
+0076     
+0077     sfbase=sfchannel*nchanin;
+0078     sf=sfchannel;
+0079     
+0080     totalsamp=size(NIDAQ.DAQData,1); <span class="comment">% assuming that</span>
+0081     
+0082     lastdat=0;
+0083     <span class="comment">% lastdat=1;   % I have to set this to 1, is 0 in Phil original!</span>
+0084     icut=1;
+0085     nsamp=0;
+0086     mystart=1;
+0087     
+0088     <span class="comment">% read NI-DAQ Data</span>
+0089     <span class="comment">%samplerateNIDAQ=25600;</span>
+0090     <span class="comment">%NI=load('Z:/myfiles/Matlab/cgm/NDIWAVES/DAQData');</span>
+0091     <span class="comment">% smpte_NI TC: 5 column matrix with hh mm ss ff audio_time</span>
+0092     <span class="comment">%smpte_chn_NI=1;</span>
+0093     <span class="comment">%[smpte_NI smpte_str_NI,errN_NI] = SMPTE_dec(NIDAQ.DAQData(:,smpte_chn_NI),NIDAQ.srate,25,0);</span>
+0094     
+0095     smpteDur_NI=smpte_NI(<span class="keyword">end</span>,end)-smpte_NI(1,end);
+0096     <span class="keyword">if</span> timingDebug
+0097         disp([ <span class="string">'last SMPTE frame at '</span> num2str(smpte_NI(<span class="keyword">end</span>,end))])
+0098         disp([ <span class="string">'first SMPTE frame at '</span> num2str(smpte_NI(1,end))])
+0099         <span class="comment">% Das ist die Dauer der Art Daten</span>
+0100         disp([<span class="string">'length of Code according to SMPTE NI capture  ( last - first ) '</span> num2str(smpteDur_NI)])
+0101     <span class="keyword">end</span>
+0102     
+0103     <span class="comment">%% NATIONAL INSTRUMENTS NIDAQ Ends here:</span>
+0104     <span class="comment">%%</span>
+0105     totalcuts=totalcuts+1;
+0106     
+0107     
+0108     
+0109     <span class="comment">%% ANALYSIS of NDI WAVE SMPTE starts here</span>
+0110     
+0111     infWavSynch = [NDIsessionroot session <span class="string">'/MySession_'</span> session <span class="string">'_'</span> int2str0(fnum,3) <span class="string">'_sync.wav'</span>];
+0112     disp(<span class="string">'++++++++++++++++++++++++++++++++++++++++++'</span>)
+0113     disp(<span class="string">''</span>)
+0114     disp([<span class="string">'Processing file '</span> infWavSynch])
+0115     disp(<span class="string">''</span>)
+0116     <span class="comment">%[dataSy,samplerateSy,NBITSSy,opts]=wavread(infWavSynch);</span>
+0117     infile=[NDIsessionroot session <span class="string">'/rawdata/MySession_'</span> session <span class="string">'_'</span> int2str0(fnum,3) <span class="string">'.wav'</span>]
+0118     [dataSYNCH,samplerate,NBITS]=wavread(infile);
+0119     
+0120     <span class="keyword">if</span> timingDebug
+0121         <span class="comment">%disp(['length of synched WAVE data in sec.: ' num2str(length(dataSy)/samplerateSy)])</span>
+0122         disp([<span class="string">'length of UNsynched WAVE data in sec.: '</span> num2str(length(dataSYNCH)/samplerate)])
+0123     <span class="keyword">end</span>
+0124     [smpte smpte_str,errN] = <a href="SMPTE_dec.html" class="code" title="function [TC, TCstr, E_per] = SMPTE_dec(smpte_audio,SR,fps,debug)">SMPTE_dec</a>(dataSYNCH(:,2),samplerate,25,0);
+0125     smpteDur=smpte(<span class="keyword">end</span>,end)-smpte(1,end);
+0126     <span class="keyword">if</span> timingDebug
+0127         disp([ <span class="string">'first SMPTE frame at '</span> num2str(smpte(1,end))])
+0128         disp([ <span class="string">'last SMPTE frame at '</span> num2str(smpte(<span class="keyword">end</span>,end))])
+0129     <span class="keyword">end</span>
+0130     
+0131     <span class="comment">%% ANALYSIS of NDI WAVE SMPTE ENDS here</span>
+0132     
+0133     
+0134     
+0135     
+0136     <span class="comment">%% Articulatory Data - Spread Sheet</span>
+0137     
+0138     <span class="comment">% TODO: Stimmt die Time Axis?</span>
+0139     
+0140     srArt=private.sesscfg.samplerate;
+0141     insheet=[NDIsessionroot session <span class="string">'/MySession_'</span> session <span class="string">'_'</span> int2str0(fnum,3) <span class="string">'_sync.tsv'</span>];
+0142     disp([<span class="string">'reading NDI sheet '</span> insheet])
+0143     <span class="comment">%[dataArt,descr]=importfile(insheet);</span>
+0144     [dataArt,descr]=<a href="NDIimport.html" class="code" title="function  varargout=NDIimport(fileToRead1,varargin);">NDIimport</a>(insheet);
+0145     durDiff=dataArt(<span class="keyword">end</span>,1)-dataArt(1,1);
+0146     <span class="keyword">if</span> timingDebug
+0147         disp([<span class="string">'length of Art data in sec. from Dat Leng: '</span> num2str(length(dataArt)/srArt)])
+0148         disp([<span class="string">' first articulatory Stamp: '</span> num2str(dataArt(1,1))])
+0149         disp([<span class="string">' last articulatory Stamp: '</span> num2str(dataArt(<span class="keyword">end</span>,1))])
+0150         disp([<span class="string">' Diff Art: '</span> num2str(durDiff)])
+0151     <span class="keyword">end</span>
+0152     
+0153     [c,iNIDAQ,iWAVE]=intersect(smpte_NI(:,1:4),smpte(:,1:4),<span class="string">'rows'</span>);
+0154     <span class="comment">% Startpoint of NI Sample</span>
+0155     
+0156     TStartNIDAQ=smpte_NI(iNIDAQ([1]),5)-smpte(iWAVE([1]),5);
+0157     <span class="comment">% Endpoint of NI Sample - Use the duration of already synched wav-File to calculate NIDAQ-EOF:</span>
+0158     wavduration=length(dataSYNCH)/samplerate;
+0159     
+0160     TEndNIDAQ=TStartNIDAQ+wavduration;
+0161     disp([<span class="string">'NI: '</span> num2str(TStartNIDAQ) <span class="string">' - '</span> num2str(TEndNIDAQ) <span class="string">' ('</span> num2str(wavduration) <span class="string">')'</span>])
+0162     
+0163     disp(smptedescr);    
+0164     disp(<span class="string">'NI first and last frame:'</span>)
+0165     disp(smpte_NI([1 end],:));
+0166     
+0167     disp(<span class="string">'WAVE first and last frame:'</span>)
+0168     disp(smpte([1 end],:));
+0169     
+0170     <span class="comment">%keyboard</span>
+0171     
+0172     data(totalcuts,1)=TStartNIDAQ;
+0173     data(totalcuts,2)=TEndNIDAQ;
+0174     data(totalcuts,4)=fnum;
+0175     cutlabel(totalcuts,:)=int2str0(totalcuts,maxtlen);
+0176 <span class="keyword">end</span>
+0177 
+0178 
+0179 samplerate=NIDAQ.srate;
+0180 
+0181 comment=[namestr];
+0182 <span class="comment">%comment=[namestr sonycomment];</span>
+0183 comment=framecomment(comment,functionname)
+0184 
+0185 [descriptor,unit,valuelabel]=cutstrucn;
+0186 label=cutlabel(1:totalcuts,:)
+0187 <span class="comment">% private</span>
+0188 disp(data)
+0189 eval ([<span class="string">'save '</span> cutname <span class="string">' data label descriptor unit comment valuelabel samplerate private'</span>]);
+0190 <span class="comment">%eval (['save ' cutname ' data label descriptor unit comment private valuelabel']);</span>
+0191 diary dodo
+0192 diary off</pre></div>
+<hr><address>Generated on Wed 30-Jan-2013 17:04:26 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

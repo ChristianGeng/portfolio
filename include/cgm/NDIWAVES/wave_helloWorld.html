@@ -1,0 +1,252 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of wave_helloWorld</title>
+  <meta name="keywords" content="wave_helloWorld">
+  <meta name="description" content="% need to close old sessions?">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">NDIWAVES</a> &gt; wave_helloWorld.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for NDIWAVES&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>wave_helloWorld
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>% need to close old sessions?</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment">% need to close old sessions?</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="wave_assembleStartRecordingPacket.html" class="code" title="function p=wave_assembleStartRecordingPacket(startStop)">wave_assembleStartRecordingPacket</a>	ASSEMBLESTARTRECORDINGPACKET --- generate the command that starts/stops</li><li><a href="wave_connect.html" class="code" title="function [s] = wave_connect (timeoutin)">wave_connect</a>	WAVE_CONNECT --- establish socket connection to NDI RT Server</li><li><a href="wave_negPackage.html" class="code" title="function [p] = wave_negPackage (s,q,averbose)">wave_negPackage</a>	WAVE_NEGPACKAGE - negotiate NDI wave packages with the NDI RT server.</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+<h2><a name="_download"></a>DOWNLOAD <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<p><a href="wave_helloWorld.m">wave_helloWorld.m</a></p>
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">%% need to close old sessions?</span>
+0002 
+0003 s.close
+0004 clear s
+0005 clear variables
+0006 
+0007 <span class="comment">%</span>
+0008 <span class="comment">% establish connection and set byte order and version 1.0</span>
+0009 [s] = <a href="wave_connect.html" class="code" title="function [s] = wave_connect (timeoutin)">wave_connect</a>(2900)
+0010 <span class="comment">%s.getSoTimeout</span>
+0011 
+0012 
+0013 q.data=<span class="string">'Version 1.0'</span>;
+0014 q.type=1;
+0015 p = <a href="wave_negPackage.html" class="code" title="function [p] = wave_negPackage (s,q,averbose)">wave_negPackage</a> (s,q);
+0016 disp(char(p.data'))
+0017 
+0018 
+0019 <span class="comment">% cString = 'SetByteOrder LittleEndian' 'false'</span>
+0020 q.data=<span class="string">'SetByteOrder LittleEndian'</span>;
+0021 q.type=1;
+0022 p = <a href="wave_negPackage.html" class="code" title="function [p] = wave_negPackage (s,q,averbose)">wave_negPackage</a> (s,q);
+0023 disp(char(p.data'))
+0024 
+0025 
+0026 <span class="comment">%</span>
+0027 
+0028 
+0029 <span class="comment">% data sizes in packets excluding header (add 8 to get full pack size)</span>
+0030 <span class="comment">% &quot;streamframes allframes all&quot;</span>
+0031 <span class="comment">% nsensors nschiffchen  ndata()</span>
+0032 <span class="comment">%   4           2       1x156</span>
+0033 <span class="comment">%</span>
+0034 
+0035 si = s.getInputStream;
+0036 so = s.getOutputStream;
+0037 
+0038 cmd=fpcommand(<span class="string">'StreamFrames AllFrames All'</span>);
+0039 so.write([abs(cmd) 10]); <span class="comment">% nullterminated</span>
+0040 so.flush;
+0041 
+0042 
+0043 <span class="comment">%for idx2=1:3</span>
+0044 <span class="comment">%while 1</span>
+0045 
+0046 
+0047 <span class="comment">% read header</span>
+0048 sSampsAq=1000;
+0049 datrec=zeros(sSampsAq,164);
+0050  minTime = Inf;  
+0051 
+0052  
+0053  tic
+0054 <span class="keyword">for</span> nn=1:sSampsAq
+0055    tStart = tic;
+0056 <span class="keyword">for</span> idx=1:4
+0057     headerRaw(idx) = si.read;
+0058 <span class="keyword">end</span>
+0059 
+0060 packSize=swapbytes(typecast(uint8(headerRaw(1:4)),<span class="string">'uint32'</span>));
+0061 packSize=double(packSize);
+0062 <span class="comment">% disp(headerRaw)</span>
+0063 <span class="comment">%disp(['packsize: ' num2str(packSize)]);</span>
+0064 
+0065 niter=packSize-4;
+0066 
+0067 <span class="keyword">for</span> idx=1:niter
+0068     <span class="keyword">try</span>,
+0069         packRaw(idx) = si.read;
+0070     <span class="keyword">catch</span>,
+0071         disp(idx),
+0072     <span class="keyword">end</span>
+0073 <span class="keyword">end</span>
+0074 packet=[headerRaw'; packRaw'];
+0075 <span class="comment">%whos packet</span>
+0076 <span class="comment">%dat(sSampsAq,:)=packet';</span>
+0077 <span class="comment">% disp(packet')</span>
+0078 <span class="comment">% tElapsed = toc(tStart);</span>
+0079  <span class="comment">%t(nn) = toc;</span>
+0080     tElapsed = toc(tStart);
+0081     minTime = min(tElapsed, minTime);
+0082 <span class="keyword">end</span>
+0083 
+0084 averageTime = toc/sSampsAq
+0085 1/averageTime
+0086 whos datrec
+0087 <span class="comment">%save timingdata</span>
+0088 
+0089 <span class="keyword">if</span>(1==2)
+0090 
+0091 packet=[headerRaw'; packRaw'];
+0092 header=packet(1:8);
+0093 data=packet(9:end);
+0094 hsize=swapbytes(typecast(uint8(header(1:4)),<span class="string">'uint32'</span>));
+0095 htype=header(8);
+0096 disp([<span class="string">'header type '</span> num2str(htype), <span class="string">' hsize '</span> num2str(hsize)])
+0097 
+0098 
+0099 componentCount=typecast(uint8(data(1:4)),<span class="string">'uint32'</span>);
+0100 componentSize=(typecast(uint8(data(5:8)),<span class="string">'uint32'</span>));
+0101 componentType=typecast(uint8(data(9:12)),<span class="string">'uint32'</span>)
+0102 FrameNo=typecast(uint8(data(13:16)),<span class="string">'uint32'</span>);
+0103 TimeStamp=typecast(uint8(data(17:24)),<span class="string">'uint64'</span>);
+0104 
+0105 <span class="comment">% Start of 6D data frame component , e.g. ComponentData=data(25:end);</span>
+0106 ToolCount=typecast(uint8(data(25:28)),<span class="string">'uint32'</span>);  <span class="comment">% is that Nsensors??</span>
+0107 whos data
+0108 tmpData=typecast(uint8(data(29:end)),<span class="string">'single'</span>);
+0109 pos=reshape(tmpData,length(tmpData)/ToolCount,ToolCount)';
+0110 pos=[pos(:,5:7)  pos(:,1:4) pos(:,8)];
+0111 <span class="keyword">end</span>
+0112 
+0113 
+0114 <span class="comment">%out=wave_readpacket(packTot);</span>
+0115 <span class="comment">%whos out</span>
+0116 <span class="comment">% disp(out)</span>
+0117 <span class="comment">%pause(0.1)</span>
+0118 
+0119 <span class="comment">%end</span>
+0120 
+0121 <span class="comment">% out=readpacket([header; packet]);</span>
+0122 <span class="comment">%</span>
+0123 <span class="comment">%data=0;</span>
+0124 <span class="comment">%if packet(4)==3 %data packet</span>
+0125 <span class="comment">%    data=out.data3d; %can be data3d, data6d or analog</span>
+0126 <span class="comment">%end</span>
+0127 
+0128 <span class="comment">%disp('data')</span>
+0129 <span class="comment">%disp(data)</span>
+0130 
+0131 <span class="comment">%%</span>
+0132 cmd=fpcommand(<span class="string">'StreamFrames Stop'</span>);
+0133 so.write([abs(cmd) 10]); <span class="comment">% nullterminated</span>
+0134 so.flush;
+0135 
+0136 
+0137 
+0138 
+0139 <span class="comment">% out.data3d is a vector with all the marker x y z data piled on top</span>
+0140 <span class="comment">% of each other [x1 y1 z1 r1 x2 y2 z2 r2 ...], see RTC3D protocol. similar</span>
+0141 <span class="comment">% for out.data6d and out.analog.</span>
+0142 
+0143 
+0144 
+0145 
+0146 
+0147 
+0148 
+0149 <span class="comment">%% Starting Stopping</span>
+0150 disp(char(p.data'))
+0151 
+0152 qStart=<a href="wave_assembleStartRecordingPacket.html" class="code" title="function p=wave_assembleStartRecordingPacket(startStop)">wave_assembleStartRecordingPacket</a>(1);
+0153 qStop=<a href="wave_assembleStartRecordingPacket.html" class="code" title="function p=wave_assembleStartRecordingPacket(startStop)">wave_assembleStartRecordingPacket</a>(0);
+0154 
+0155 
+0156 p = <a href="wave_negPackage.html" class="code" title="function [p] = wave_negPackage (s,q,averbose)">wave_negPackage</a> (s,qStart);
+0157 pause(1)
+0158 p = <a href="wave_negPackage.html" class="code" title="function [p] = wave_negPackage (s,q,averbose)">wave_negPackage</a> (s,qStop);
+0159 
+0160 
+0161 <span class="comment">%%</span>
+0162 
+0163 
+0164 <span class="comment">% SEND CURRENT  FRAME</span>
+0165 p.data=<span class="string">'SendCurrentFrame'</span>
+0166 p.type=3;
+0167 pOut = <a href="wave_negPackage.html" class="code" title="function [p] = wave_negPackage (s,q,averbose)">wave_negPackage</a> (s,p);
+0168 disp(char(pOut.data'))
+0169 
+0170 <span class="comment">% SEND PARAMTERS ALL</span>
+0171 p.data=<span class="string">'SendParameters All'</span>
+0172 p.type=1;
+0173 pOut = <a href="wave_negPackage.html" class="code" title="function [p] = wave_negPackage (s,q,averbose)">wave_negPackage</a> (s,p);
+0174 disp(char(pOut.data'))
+0175 
+0176 
+0177 
+0178 <span class="comment">%% Stop Streaming</span>
+0179 strFramesStop.data=<span class="string">'StreamFrames Stop'</span>
+0180 strFramesStop.type=1;
+0181 strFramesStopOut = <a href="wave_negPackage.html" class="code" title="function [p] = wave_negPackage (s,q,averbose)">wave_negPackage</a> (s,strFramesStop);
+0182 disp(char(strFramesStopOut.data'))
+0183 
+0184 
+0185 
+0186 <span class="comment">% start.data=</span>
+0187 <span class="comment">% start.type=3;</span>
+0188 
+0189 
+0190 <span class="comment">% str = 0x00b1ccc0 &quot;StreamFrames AllFrames&quot;</span>
+0191 
+0192 
+0193 <span class="comment">% m_cSendBuffer[0] 0x00</span>
+0194 <span class="comment">% m_cSendBuffer[1] 0x00</span>
+0195 <span class="comment">% m_cSendBuffer[2] 0x00</span>
+0196 <span class="comment">% m_cSendBuffer[3] 0x1f  -&gt; 31</span>
+0197 <span class="comment">%</span>
+0198 <span class="comment">% m_cSendBuffer[4] 0x00</span>
+0199 <span class="comment">% m_cSendBuffer[5] 0x00</span>
+0200 <span class="comment">% m_cSendBuffer[6] 0x00</span>
+0201 <span class="comment">% m_cSendBuffer[7] 0x00</span>
+0202 <span class="comment">% dann StreamFrames AllFrames</span>
+0203 
+0204 <span class="comment">% m_nttype=0x00000003</span></pre></div>
+<hr><address>Generated on Wed 30-Jan-2013 17:04:26 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

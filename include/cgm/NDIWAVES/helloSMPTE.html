@@ -1,0 +1,189 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of helloSMPTE</title>
+  <meta name="keywords" content="helloSMPTE">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">NDIWAVES</a> &gt; helloSMPTE.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for NDIWAVES&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>helloSMPTE
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function testSMPTE </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Wenn kein SMPTE generiert werden kann, 
+ dann wird auch kein tsv erzeugt. 
+ 
+ Idealerweise das binary format haben
+ Workaround SMPTE von NDI nutzen, 
+ oder das Trigger Signal mit genauer Reliabilitaet aufzeichnen koennen. 
+ 
+ Mail Melanie
+ 
+ I also confirmed that the issue Mark raised regarding the time signal
+ in the first column of the data file is a rounding issue. The time
+ shown in the first column is actually calculated from the WavID in the
+ third column. That means that you can re-create a non-rounded time
+ stamp from the data shown in the third column (WavId) fairly easily.
+ The WavID is the actual sample number in the Wav file closest to the
+ kinematic sample. For the first time stamp, divide WavID by 22,050,
+ assuming that the audio sampling rate is 22,050 Hz (in excel:
+ =C2/22050 ). Then take the difference between two adjacent WavId's,
+ devide by 22,050 and add to the previous time stamp (in excel:
+ =(C3-C2)/22050+D2 ) (where D is the new column in excel for the newly
+ calculated non-rounded time stamps). I've attached an excel example to
+ this email.
+ 
+ Best regards,
+ Melanie</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="SMPTE_dec.html" class="code" title="function [TC, TCstr, E_per] = SMPTE_dec(smpte_audio,SR,fps,debug)">SMPTE_dec</a>	% SMPTE audio decoder v2.4</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+<h2><a name="_download"></a>DOWNLOAD <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<p><a href="helloSMPTE.m">helloSMPTE.m</a></p>
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function testSMPTE</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Wenn kein SMPTE generiert werden kann,</span>
+0004 <span class="comment">% dann wird auch kein tsv erzeugt.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% Idealerweise das binary format haben</span>
+0007 <span class="comment">% Workaround SMPTE von NDI nutzen,</span>
+0008 <span class="comment">% oder das Trigger Signal mit genauer Reliabilitaet aufzeichnen koennen.</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% Mail Melanie</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">% I also confirmed that the issue Mark raised regarding the time signal</span>
+0013 <span class="comment">% in the first column of the data file is a rounding issue. The time</span>
+0014 <span class="comment">% shown in the first column is actually calculated from the WavID in the</span>
+0015 <span class="comment">% third column. That means that you can re-create a non-rounded time</span>
+0016 <span class="comment">% stamp from the data shown in the third column (WavId) fairly easily.</span>
+0017 <span class="comment">% The WavID is the actual sample number in the Wav file closest to the</span>
+0018 <span class="comment">% kinematic sample. For the first time stamp, divide WavID by 22,050,</span>
+0019 <span class="comment">% assuming that the audio sampling rate is 22,050 Hz (in excel:</span>
+0020 <span class="comment">% =C2/22050 ). Then take the difference between two adjacent WavId's,</span>
+0021 <span class="comment">% devide by 22,050 and add to the previous time stamp (in excel:</span>
+0022 <span class="comment">% =(C3-C2)/22050+D2 ) (where D is the new column in excel for the newly</span>
+0023 <span class="comment">% calculated non-rounded time stamps). I've attached an excel example to</span>
+0024 <span class="comment">% this email.</span>
+0025 <span class="comment">%</span>
+0026 <span class="comment">% Best regards,</span>
+0027 <span class="comment">% Melanie</span>
+0028 <span class="comment">%</span>
+0029 
+0030 clear variables
+0031 verbose=0
+0032 clc
+0033 mysession=<span class="string">'49'</span>;
+0034 fnum=02;
+0035 
+0036 sessionroot=<span class="string">'c:/ndigital/collections/MySession_'</span>;
+0037 
+0038 infWavSynch = [sessionroot mysession <span class="string">'/MySession_'</span> mysession <span class="string">'_'</span> int2str0(fnum,3) <span class="string">'_sync.wav'</span>];
+0039 [dataSy,samplerateSy,NBITSSy,opts]=wavread(infWavSynch);
+0040 
+0041 infile=[sessionroot mysession <span class="string">'/rawdata/MySession_'</span> mysession <span class="string">'_'</span> int2str0(fnum,3) <span class="string">'.wav'</span>];
+0042 [data,samplerate,NBITS]=wavread(infile);
+0043 
+0044 <span class="keyword">if</span> verbose
+0045     disp([<span class="string">'length of synched WAVE data in sec.: '</span> num2str(length(dataSy)/samplerateSy)])
+0046     
+0047     disp([<span class="string">'length of UNsynched WAVE data in sec.: '</span> num2str(length(data)/samplerate)])
+0048 <span class="keyword">end</span>
+0049 <span class="comment">%% SMPTE</span>
+0050 [smpte smpte_str,errN] = <a href="SMPTE_dec.html" class="code" title="function [TC, TCstr, E_per] = SMPTE_dec(smpte_audio,SR,fps,debug)">SMPTE_dec</a>(data(:,2),samplerate,25,0);
+0051 smpteDur=smpte(<span class="keyword">end</span>,end)-smpte(1,end);
+0052 <span class="keyword">if</span> verbose
+0053     disp([ <span class="string">'first SMPTE frame at '</span> num2str(smpte(1,end))])
+0054     disp([ <span class="string">'last SMPTE frame at '</span> num2str(smpte(<span class="keyword">end</span>,end))])
+0055 <span class="keyword">end</span>
+0056 
+0057 <span class="comment">%% Articulatory Data - Spread Sheet</span>
+0058 srArt=200;
+0059 insheet=[sessionroot mysession <span class="string">'/MySession_'</span> mysession <span class="string">'_'</span> int2str0(fnum,3) <span class="string">'_sync.tsv'</span>];
+0060 [dataArt,descr]=importfile(insheet);
+0061 durDiff=dataArt(<span class="keyword">end</span>,1)-dataArt(1,1);
+0062 <span class="keyword">if</span> verbose
+0063     disp([<span class="string">'length of Art data in sec. from Dat Leng: '</span> num2str(length(dataArt)/srArt)])
+0064     disp([<span class="string">' first articulatory Stamp: '</span> num2str(dataArt(1,1))])
+0065     disp([<span class="string">' last articulatory Stamp: '</span> num2str(dataArt(<span class="keyword">end</span>,1))])
+0066     disp([<span class="string">' Diff Art: '</span> num2str(durDiff)])
+0067 <span class="keyword">end</span>
+0068 
+0069 <span class="comment">%% calculate correct Time Axis for articulatory data (see snippets of mail / Xls-File by Melanie)</span>
+0070 <span class="comment">%myStamps='Z:\myfiles\potsdam\NDIWaves\Melaniesstamps.xls'</span>
+0071 <span class="comment">%xlsfinfo(myStamps)</span>
+0072 <span class="comment">%[status,sheets,format]=xlsread(myStamps,'stamps');</span>
+0073 WaveSR=22050;
+0074 <span class="comment">%The WavID is the actual sample number in the Wav file closest to the kinematic sample.</span>
+0075  wavId=dataArt(:,3);
+0076 wavIdShift=circshift(wavId,-1);
+0077 sampdur= (wavIdShift -  wavId) ./ WaveSR ;
+0078 wavId_1=wavId(1)./WaveSR; <span class="comment">% compare: disp(status(1,4))</span>
+0079 <span class="comment">% timeAx: Artikulatorische ZeitAchse in Sekunden</span>
+0080 timeAx=wavId_1 + cumsum(sampdur);
+0081 timeAx=[wavId_1  ; timeAx(1:end-1) ];
+0082 
+0083 <span class="comment">%% read NI-DAQ Data</span>
+0084 samplerateNIDAQ=25600;
+0085 NI=load(<span class="string">'Z:/myfiles/Matlab/cgm/NDIWAVES/DAQData'</span>);
+0086 <span class="comment">% smpte_NI TC: 5 column matrix with hh mm ss ff audio_time</span>
+0087 smpte_chn=1;
+0088 [smpte_NI smpte_str_NI,errN_NI] = <a href="SMPTE_dec.html" class="code" title="function [TC, TCstr, E_per] = SMPTE_dec(smpte_audio,SR,fps,debug)">SMPTE_dec</a>(NI.DAQData(:,smpte_chn),NI.srate,25,0);
+0089 
+0090 smpteDur_NI=smpte_NI(<span class="keyword">end</span>,end)-smpte_NI(1,end);
+0091 <span class="keyword">if</span> verbose
+0092     disp([ <span class="string">'last SMPTE frame at '</span> num2str(smpte_NI(<span class="keyword">end</span>,end))])
+0093     disp([ <span class="string">'first SMPTE frame at '</span> num2str(smpte_NI(1,end))])
+0094     <span class="comment">% Das ist die Dauer der Art Daten</span>
+0095     disp([<span class="string">'length of Code according to SMPTE NI capture  ( last - first ) '</span> num2str(smpteDur_NI)])
+0096 <span class="keyword">end</span>
+0097 
+0098 [c,iNIDAQ,iWAVE]=intersect(smpte_NI(:,1:4),smpte(:,1:4),<span class="string">'rows'</span>);
+0099 <span class="comment">% Startpoint of NI Sample</span>
+0100 TStartNIDAQ=smpte_NI(iNIDAQ([1]),5)-smpte(iWAVE([1]),5);
+0101 <span class="comment">% Endpoint of NI Sample - Use the duration of already synched wav-File to calculate NIDAQ-EOF:</span>
+0102 wavdurationSY=length(dataSy)/samplerateSy;
+0103 TEndNIDAQ=TStartNIDAQ+wavdurationSY;
+0104 
+0105 
+0106 <span class="comment">% The sample that</span>
+0107 
+0108 <span class="comment">% Bin File</span>
+0109 <span class="comment">%infileArt=[sessionroot mysession '/rawdata/MySession_' mysession '_' int2str0(fnum,3) '.raw'];</span>
+0110 
+0111 <span class="comment">%for skipB=0:10</span>
+0112 <span class="comment">%    skipB=0</span>
+0113 <span class="comment">%data=loadPosNDI(infileArt,'float',skipB)</span>
+0114 <span class="comment">%end</span>
+0115 <span class="comment">%dataArt(1:3,1:3)</span>
+0116 <span class="comment">%data(1:20)</span></pre></div>
+<hr><address>Generated on Wed 30-Jan-2013 17:04:26 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

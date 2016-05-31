@@ -1,0 +1,227 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of wave_negPackage</title>
+  <meta name="keywords" content="wave_negPackage">
+  <meta name="description" content="WAVE_NEGPACKAGE - negotiate NDI wave packages with the NDI RT server.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">NDIWAVES</a> &gt; wave_negPackage.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for NDIWAVES&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>wave_negPackage
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>WAVE_NEGPACKAGE - negotiate NDI wave packages with the NDI RT server.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [p] = wave_negPackage (s,q,averbose) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> WAVE_NEGPACKAGE - negotiate NDI wave packages with the NDI RT server. 
+ 
+ Description:
+   send packages to NDI RT server and read back response (if present)
+   This entails 
+       a) sending packets
+       b) read back the reply (if any)
+
+ Syntax:
+       Socket s  - see wave_connect
+       package q - Data package
+       package p - 
+ Packages p and q are assumed to be structs with at least the following 2 fields:
+  a) p.data: The stram to be sent or received
+  b) p.type: The data type (see NDI docs for more background). 
+  NOTE: the package header (8 bytes) cotaining size (4B) and type (4B) is
+  prepended in this function!
+
+ Examples:
+
+ 
+ q.data='Version 1.0';
+ q.type=1;
+ p = wave_negPackage (s,q);
+ disp(char(p.data'))
+ 
+ % cString = 'SetByteOrder LittleEndian' 'false'
+ q.data='SetByteOrder LittleEndian';
+ q.type=1;
+ p = wave_negPackage (s,q);
+
+ q.data='SendParameters All';
+ q.type=1;
+ p = wave_negPackage (s,q);
+ char(p.data')
+ 
+ q.data='SendCurrentFrame 3D';
+ q.type=1;
+ p = wave_negPackage (s,q);
+ char(p.data')
+ 
+ q.data='StreamFrames AllFrames';
+ q.type=1;
+ p = wave_negPackage (s,q);
+ char(p.data')
+ 
+ TODO: Maybe object oriented tools come in handy
+
+ SEE ALSO: <a href="wave_connect.html" class="code" title="function [s] = wave_connect (timeoutin)">WAVE_CONNECT</a>, ASSEMBLESTARTRECORDINGPACKET
+
+  $Date: 2011/10/04 18:22:12 $ CG</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="daqNItest.html" class="code" title="">daqNItest</a>	function daqNItest</li><li><a href="prompterNDI_NIDAQ.html" class="code" title="function prompterNDI_NIDAQ(stimfile,logfile,trial_duration,fontsize,aDaqNameCommon,startwav,endwav);">prompterNDI_NIDAQ</a>	prompterNDI_NIDAQ Prompt program for NDI wave system, also controlling</li><li><a href="prompterNDI_simple.html" class="code" title="function prompterNDI_simple(stimfile,logfile,trial_duration,fontsize,startwav,endwav,mysynchline);">prompterNDI_simple</a>	VERSION USING BUILT IN AUDIO CAPTURE</li><li><a href="prompter_NIDAQ.html" class="code" title="function prompterNDI_NIDAQ(stimfile,logfile,trial_duration,fontsize,aDaqNameCommon,startwav,endwav);">prompter_NIDAQ</a>	prompterNDI_NIDAQ Prompt program for NDI wave system, also controlling</li><li><a href="wave_helloWorld.html" class="code" title="">wave_helloWorld</a>	% need to close old sessions?</li></ul>
+<!-- crossreference -->
+
+
+<h2><a name="_download"></a>DOWNLOAD <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<p><a href="wave_negPackage.m">wave_negPackage.m</a></p>
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [p] = wave_negPackage (s,q,averbose)</a>
+0002 <span class="comment">% WAVE_NEGPACKAGE - negotiate NDI wave packages with the NDI RT server.</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% Description:</span>
+0005 <span class="comment">%   send packages to NDI RT server and read back response (if present)</span>
+0006 <span class="comment">%   This entails</span>
+0007 <span class="comment">%       a) sending packets</span>
+0008 <span class="comment">%       b) read back the reply (if any)</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% Syntax:</span>
+0011 <span class="comment">%       Socket s  - see wave_connect</span>
+0012 <span class="comment">%       package q - Data package</span>
+0013 <span class="comment">%       package p -</span>
+0014 <span class="comment">% Packages p and q are assumed to be structs with at least the following 2 fields:</span>
+0015 <span class="comment">%  a) p.data: The stram to be sent or received</span>
+0016 <span class="comment">%  b) p.type: The data type (see NDI docs for more background).</span>
+0017 <span class="comment">%  NOTE: the package header (8 bytes) cotaining size (4B) and type (4B) is</span>
+0018 <span class="comment">%  prepended in this function!</span>
+0019 <span class="comment">%</span>
+0020 <span class="comment">% Examples:</span>
+0021 <span class="comment">%</span>
+0022 <span class="comment">%</span>
+0023 <span class="comment">% q.data='Version 1.0';</span>
+0024 <span class="comment">% q.type=1;</span>
+0025 <span class="comment">% p = wave_negPackage (s,q);</span>
+0026 <span class="comment">% disp(char(p.data'))</span>
+0027 <span class="comment">%</span>
+0028 <span class="comment">% % cString = 'SetByteOrder LittleEndian' 'false'</span>
+0029 <span class="comment">% q.data='SetByteOrder LittleEndian';</span>
+0030 <span class="comment">% q.type=1;</span>
+0031 <span class="comment">% p = wave_negPackage (s,q);</span>
+0032 <span class="comment">%</span>
+0033 <span class="comment">% q.data='SendParameters All';</span>
+0034 <span class="comment">% q.type=1;</span>
+0035 <span class="comment">% p = wave_negPackage (s,q);</span>
+0036 <span class="comment">% char(p.data')</span>
+0037 <span class="comment">%</span>
+0038 <span class="comment">% q.data='SendCurrentFrame 3D';</span>
+0039 <span class="comment">% q.type=1;</span>
+0040 <span class="comment">% p = wave_negPackage (s,q);</span>
+0041 <span class="comment">% char(p.data')</span>
+0042 <span class="comment">%</span>
+0043 <span class="comment">% q.data='StreamFrames AllFrames';</span>
+0044 <span class="comment">% q.type=1;</span>
+0045 <span class="comment">% p = wave_negPackage (s,q);</span>
+0046 <span class="comment">% char(p.data')</span>
+0047 <span class="comment">%</span>
+0048 <span class="comment">% TODO: Maybe object oriented tools come in handy</span>
+0049 <span class="comment">%</span>
+0050 <span class="comment">% SEE ALSO: WAVE_CONNECT, ASSEMBLESTARTRECORDINGPACKET</span>
+0051 <span class="comment">%</span>
+0052 <span class="comment">%  $Date: 2011/10/04 18:22:12 $ CG</span>
+0053 
+0054 <span class="comment">% p should be a struct containing the fields</span>
+0055 <span class="comment">% Assumption: Endiannes set correctly</span>
+0056 
+0057 verbose=0;
+0058 <span class="keyword">if</span> nargin&gt;2
+0059     verbose=averbose;
+0060 <span class="keyword">end</span>
+0061 
+0062 
+0063 szData=length(q.data);
+0064 <span class="comment">% headersize immer 8</span>
+0065 RawPacketHeadersize = 8;
+0066 totPacketlength=szData+RawPacketHeadersize+1;
+0067 header.m_size=typecast(swapbytes(uint32(totPacketlength)),<span class="string">'uint8'</span>);
+0068 header.m_type=typecast(swapbytes(uint32(q.type)),<span class="string">'uint8'</span>);
+0069 
+0070 <span class="comment">%copy all packet into send buffer</span>
+0071 <span class="comment">%        memcpy( pBuffer, &amp;header, sizeof(header) );</span>
+0072 <span class="comment">%</span>
+0073 <span class="comment">%</span>
+0074 <span class="comment">% m_pData  ist ein char ptr: char *m_pData;</span>
+0075 <span class="comment">%        memcpy( pBuffer + sizeof(header), m_pData, m_nSize - sizeof(header) );</span>
+0076 
+0077 
+0078 <span class="keyword">if</span> ~strcmp(get(s,<span class="string">'connected'</span>),<span class="string">'on'</span>)    
+0079     error(<span class="string">'Socket not connected!'</span>);
+0080 <span class="keyword">end</span>
+0081     so = s.getOutputStream;
+0082     so.write(header.m_size);
+0083     so.write(header.m_type);
+0084     
+0085     so.write([abs(q.data) 10]); <span class="comment">% nullterminated</span>
+0086     <span class="comment">%so.write([abs(q.data)]); % unterminated</span>
+0087     
+0088     <span class="keyword">if</span> verbose
+0089         disp([<span class="string">'negotiating package: size of data (excluding header):'</span> num2str(length(q.data))]);
+0090     <span class="keyword">end</span>
+0091 so.flush;
+0092 
+0093 
+0094 
+0095 
+0096 <span class="comment">%s.getSoTimeout</span>
+0097 
+0098 <span class="keyword">if</span> (q.type==3); 
+0099     p.size=0;
+0100     p.type=0;
+0101     p.data=0;
+0102         <span class="keyword">return</span>;
+0103 <span class="keyword">end</span>
+0104 
+0105 
+0106 
+0107 si = s.getInputStream;
+0108 
+0109 p.size(1) = si.read;
+0110 p.size(2) = si.read;
+0111 p.size(3) = si.read;
+0112 p.size(4) = si.read;
+0113 
+0114 p.size=swapbytes(typecast(uint8(p.size),<span class="string">'uint32'</span>));
+0115 
+0116 p.type(1) = si.read;
+0117 p.type(2) = si.read;
+0118 p.type(3) = si.read;
+0119 p.type(4) = si.read;
+0120 p.type=swapbytes(typecast(uint8(p.type),<span class="string">'uint32'</span>));
+0121 
+0122 p.data=zeros(p.size-RawPacketHeadersize,1);
+0123 
+0124 <span class="keyword">for</span> iter= 1: p.size-RawPacketHeadersize
+0125     p.data(iter)=si.read;
+0126 <span class="keyword">end</span>
+0127 <span class="comment">%p.data</span>
+0128 <span class="comment">% p.data = char( p.data);</span>
+0129</pre></div>
+<hr><address>Generated on Wed 30-Jan-2013 17:04:26 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

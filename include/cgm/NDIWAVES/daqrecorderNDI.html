@@ -1,0 +1,361 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of daqrecorderNDI</title>
+  <meta name="keywords" content="daqrecorderNDI">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">NDIWAVES</a> &gt; daqrecorderNDI.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for NDIWAVES&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>daqrecorderNDI
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function daqrecorder(varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"></pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="#_sub1" class="code">function playcb(obj,data,hl,AIADLINK2213,htitle);</a></li><li><a href="#_sub2" class="code">function plotcb(cb_obj,cb_data,hl,nsamp,htitle)</a></li></ul>
+<h2><a name="_download"></a>DOWNLOAD <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<p><a href="daqrecorderNDI.m">daqrecorderNDI.m</a></p>
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function daqrecorder(varargin)</a>
+0002 
+0003 daqreset
+0004 <span class="comment">% logfilename=['LogFileNN.daq']</span>
+0005 logfilename=[<span class="string">'test.daq'</span>]
+0006 <span class="keyword">if</span> (nargin&gt;0)
+0007 logfilename=varargin{1};
+0008 <span class="keyword">end</span>;
+0009 
+0010 
+0011 
+0012 
+0013 <span class="comment">% Configure LOGGING</span>
+0014 <span class="comment">% myloggingmode='Disk&amp;Memory';</span>
+0015 myloggingmode=<span class="string">'Disk'</span>
+0016 <span class="comment">% intialize fig for synch data</span>
+0017 hfsyncdat=figure;
+0018 colordef(hfsyncdat,<span class="string">'none'</span>);
+0019 set(hfsyncdat,<span class="string">'menu'</span>,<span class="string">'none'</span>);
+0020 set(hfsyncdat,<span class="string">'menu'</span>,<span class="string">'figure'</span>); <span class="comment">% to turn back on</span>
+0021 set(gca,<span class="string">'position'</span>,[0.05 0.05 0.9 0.9]);
+0022 set(hfsyncdat,<span class="string">'name'</span>,<span class="string">'ADLINK CAPTURE'</span>);
+0023  
+0024 AIADLINK2213= analoginput(<span class="string">'mwadlink'</span>, 0)<span class="comment">%Opens the analog input functionality of device #0 (DAQ-2213)</span>
+0025 set(AIADLINK2213, <span class="string">'InputType'</span>, <span class="string">'Differential'</span>)
+0026 nchannel=5;
+0027 names = makenames(<span class="string">'Channel'</span>,1:nchannel);
+0028 
+0029 addchannel(AIADLINK2213, 0:nchannel-1, names) <span class="comment">% 4 channels are ok for the moment</span>
+0030 
+0031 <span class="comment">% sr=22050;</span>
+0032 sr=32000;
+0033 set(AIADLINK2213, <span class="string">'SampleRate'</span>, sr)              <span class="comment">%Set SampleRate to sr</span>
+0034 set(AIADLINK2213, <span class="string">'SamplesPerTrigger'</span>, inf);     <span class="comment">% Data Aquistion must be interrupted by stop signal</span>
+0035                                                  <span class="comment">% convertor to run until stopped</span>
+0036                                                  <span class="comment">% If TriggerRepeat is set to its default value of zero,</span>
+0037                                                  <span class="comment">% then the trigger executes once</span>
+0038 set(AIADLINK2213, <span class="string">'TriggerRepeat'</span>,0);
+0039 
+0040 out = daqhwinfo(AIADLINK2213)
+0041 
+0042 
+0043 <span class="comment">% Specify range of analog input subsystem</span>
+0044 <span class="comment">% Description</span>
+0045 
+0046 <span class="comment">% InputRange:</span>
+0047 <span class="comment">% InputRange is a two-element vector that specifies the range of voltages that can be accepted by the analog input (AI) subsystem.</span>
+0048 <span class="comment">% You should configure InputRange so that the maximum dynamic range of your hardware is utilized.</span>
+0049 
+0050 <span class="comment">% SensorRange:</span>
+0051 <span class="comment">% You use SensorRange to scale your data to reflect the range you expect from your sensor.</span>
+0052 <span class="comment">% You can find the appropriate sensor range from your sensor's specification sheet.</span>
+0053 <span class="comment">% The data is scaled while it is extracted from the engine with the getdata function according to the formula</span>
+0054 <span class="comment">% scaled value = (A/D value)(units range)/(sensor range)</span>
+0055 
+0056 <span class="comment">% UnitsRange:</span>
+0057 <span class="comment">% Specify range of data as engineering units</span>
+0058 <span class="comment">% You use UnitsRange to scale your data to reflect particular engineering units.</span>
+0059 <span class="comment">% For analog input objects, the data is scaled while it is extracted from the engine with the getdata function according to the formula</span>
+0060 <span class="comment">% scaled value = (A/D value)(units range)/(sensor range)</span>
+0061 <span class="comment">% The A/D value is constrained by the InputRange property, which reflects the gain and polarity of your analog input channels.</span>
+0062 <span class="comment">% The sensor range is given by the SensorRange property, which reflects the range of data you expect from your sensor.</span>
+0063 
+0064 
+0065 <span class="comment">%</span>
+0066 <span class="comment">% % Inputranges=[-5 5;</span>
+0067 <span class="comment">% %             -10 10;</span>
+0068 <span class="comment">% %             -10 10;</span>
+0069 <span class="comment">% %             -10 10;</span>
+0070 <span class="comment">% %             -10 10];</span>
+0071 
+0072 <span class="comment">% Inputranges=[-5  5;</span>
+0073 <span class="comment">%               0  5;</span>
+0074 <span class="comment">%             -10 10;</span>
+0075 <span class="comment">%               0  5;</span>
+0076 <span class="comment">%             -10 10];</span>
+0077 
+0078 <span class="comment">%         Inputranges=[-5  5;</span>
+0079 <span class="comment">%               0  5;</span>
+0080 <span class="comment">%             -5 5;</span>
+0081 <span class="comment">%               0  5;</span>
+0082 <span class="comment">%             -5 5];</span>
+0083 
+0084 
+0085 Inputranges=[-10 10;
+0086               0  5;
+0087             -10 10;
+0088               0  5;
+0089             -10 10];
+0090 
+0091 
+0092         <span class="keyword">for</span> rr=1:nchannel
+0093             evalstring = [<span class="string">'ActualRange = setverify(AIADLINK2213.Channel'</span>,num2str(rr),<span class="string">',''InputRange'''</span>,<span class="string">','</span> ,<span class="keyword">...</span>
+0094                 <span class="string">'['</span>,num2str(Inputranges(rr,1)),<span class="string">' '</span>,num2str(Inputranges(rr,2)),<span class="string">']);'</span>;];
+0095           eval(evalstring)
+0096         <span class="keyword">end</span>        
+0097         
+0098 
+0099 names{2}=<span class="string">'Sync CS6'</span>;
+0100 names{4}=<span class="string">'Sync CS5'</span>;
+0101 
+0102 set(AIADLINK2213, <span class="string">'LoggingMode'</span>, myloggingmode);
+0103 set(AIADLINK2213, <span class="string">'LogFileName'</span>, logfilename); 
+0104 set(AIADLINK2213, <span class="string">'logtodiskmode'</span>,<span class="string">'Index'</span>)
+0105 
+0106 <span class="comment">% Initialize multichannel oscilloscope</span>
+0107 <span class="comment">%Work out the number of samples per screen</span>
+0108 samplerate=sr;
+0109 screentime=0.5; <span class="comment">%(in secs)</span>
+0110 nsampscreen=round(samplerate*screentime);
+0111 zerosignal=zeros(nsampscreen,1);
+0112 timedata=((0:(nsampscreen-1))/samplerate)';
+0113 figure(hfsyncdat)
+0114 
+0115 dbmin=-90;
+0116   <span class="keyword">for</span> rr=1:nchannel
+0117     hfsyncaxes(rr)=subplot(nchannel,1,rr);
+0118     hl(rr)=plot(timedata,zeros(nsampscreen,1));
+0119 <span class="comment">% Sth. wrong with the db</span>
+0120 <span class="comment">%     ylim([dbmin 0]);</span>
+0121 <span class="comment">%     ylabel('dB');</span>
+0122     ylim(Inputranges(rr,:))
+0123     ylabel(names{rr});
+0124 <span class="comment">%     if (rr==3)</span>
+0125 <span class="comment">%         ylim([dbmin 0])</span>
+0126 <span class="comment">%     end</span>
+0127 <span class="comment">%     if (rr==5)</span>
+0128 <span class="comment">%         ylim([dbmin 0])</span>
+0129 <span class="comment">%     end</span>
+0130         
+0131     <span class="keyword">if</span> (rr==1)
+0132         htitle=title(<span class="string">'Press anywhere to start/stop recording!'</span>);
+0133     <span class="keyword">end</span>;
+0134     <span class="keyword">if</span> (rr==nchannel)
+0135         xlabel(<span class="string">'Time (s)'</span>);
+0136     <span class="keyword">end</span>
+0137     
+0138     <span class="keyword">if</span> ~(rr==nchannel)
+0139         set(hfsyncaxes(rr),<span class="string">'Xtick'</span>,[]);
+0140     <span class="keyword">end</span>
+0141     
+0142     <span class="comment">%Label the x axis</span>
+0143   <span class="keyword">end</span>
+0144   
+0145 <span class="comment">% % from myscope_3.m</span>
+0146 <span class="comment">% % should not go here CHANGE!</span>
+0147 <span class="comment">% dbmin=-90;</span>
+0148 <span class="comment">%</span>
+0149 <span class="comment">% ydata=[dbmin;0];</span>
+0150 <span class="comment">% %hl=plot(xdata,ydata);</span>
+0151 <span class="comment">%</span>
+0152 <span class="comment">% %display only makes sense with fixed y axis</span>
+0153 <span class="comment">% %As matlab normalizes the data from the windows AD convertor to +/- 1, set</span>
+0154 <span class="comment">% %the maximimum db value intially to 0</span>
+0155 <span class="comment">%</span>
+0156 <span class="comment">% Callbacks for Osciwindow:</span>
+0157 <span class="comment">%samples to process</span>
+0158 set(AIADLINK2213,<span class="string">'samplesacquiredfcn'</span>,{@<a href="#_sub2" class="code" title="subfunction plotcb(cb_obj,cb_data,hl,nsamp,htitle)">plotcb</a>,hl,nsampscreen,htitle});
+0159 <span class="comment">%This defines how often the callback function should run</span>
+0160 set(AIADLINK2213,<span class="string">'samplesacquiredfcncount'</span>,nsampscreen);
+0161 
+0162 <span class="comment">% Callbacks for clicking to start/stop:</span>
+0163 <span class="comment">%activate callback, so sounds can be heard by clicking in any figure</span>
+0164 set(hfsyncdat,<span class="string">'windowbuttondownfcn'</span>,{@<a href="#_sub1" class="code" title="subfunction playcb(obj,data,hl,AIADLINK2213,htitle);">playcb</a>,hl,AIADLINK2213,htitle});
+0165 
+0166 
+0167 <a name="_sub1" href="#_subfunctions" class="code">function playcb(obj,data,hl,AIADLINK2213,htitle);</a>
+0168 <span class="comment">% callback for start stop of engine</span>
+0169 <span class="comment">% samplerate=get(obj,'userdata');</span>
+0170 <span class="comment">% soundsc(get(hl,'ydata'),samplerate);</span>
+0171 
+0172 <span class="keyword">if</span> strcmp(get(AIADLINK2213,<span class="string">'running'</span>),<span class="string">'Off'</span>)
+0173     tic;
+0174     start(AIADLINK2213);
+0175     titlestring=get(htitle,<span class="string">'string'</span>);
+0176     titlestring = strrep(titlestring, <span class="string">'Off'</span>, <span class="string">'On'</span>);
+0177     set(htitle,<span class="string">'string'</span>,titlestring,<span class="string">'color'</span>,<span class="string">'r'</span>);
+0178 <span class="keyword">elseif</span> strcmp(get(AIADLINK2213,<span class="string">'running'</span>),<span class="string">'On'</span>)
+0179     titlestring=get(htitle,<span class="string">'string'</span>);
+0180     titlestring = strrep(titlestring, <span class="string">'On'</span>, <span class="string">'Off'</span>);
+0181     set(htitle,<span class="string">'string'</span>,titlestring,<span class="string">'color'</span>,<span class="string">'g'</span>);
+0182     stop(AIADLINK2213);    
+0183 <span class="keyword">else</span>, 
+0184     daqreset
+0185     error(<span class="string">'undefined condition of the card, reset!!'</span>)
+0186 <span class="keyword">end</span>
+0187 
+0188    
+0189 <a name="_sub2" href="#_subfunctions" class="code">function plotcb(cb_obj,cb_data,hl,nsamp,htitle)</a>
+0190 <span class="comment">% A special feature of callback functions is that the first two input</span>
+0191 <span class="comment">% arguments are pre-defined. The 3 arguments we gave in the specification</span>
+0192 <span class="comment">% above (set(hai,'samplesacquiredfcn',{@plotcb,hl,nsamp,htitle});)</span>
+0193 <span class="comment">% thus have to be given here starting as the third input argument.</span>
+0194 
+0195 <span class="comment">%The first argument ('cb_obj') is the handle of the object that has triggered the</span>
+0196 <span class="comment">%callback (in our case the analog input object); the second argument ('cb_data') gives</span>
+0197 <span class="comment">%more information about the event that triggered the interrupt (in our case</span>
+0198 <span class="comment">%the event is that the specified number of samples has been acquired).</span>
+0199 <span class="comment">%In our case we don't need to use the latter information, but it is quite</span>
+0200 <span class="comment">%possible for different objects and different kinds of events to call the</span>
+0201 <span class="comment">%same callback function, in which case it may be essential for the callback</span>
+0202 <span class="comment">% function to know 'why' it has been activated</span>
+0203 
+0204 <span class="comment">% y=getdata(cb_obj,nsamp); % Phil: I do  logtodisk  so I use</span>
+0205 <span class="comment">% cb_obj is the AIADLINK</span>
+0206 y = peekdata(cb_obj,nsamp);
+0207 <span class="comment">% z = double(peekdata(cb_obj,nsamp,'native'));</span>
+0208 <span class="comment">% whos z</span>
+0209 
+0210 <span class="comment">% z(:,[3 5])=(10.*log10(double(2^15)./abs((z(:,[3 5])))));</span>
+0211 
+0212 <span class="comment">%y = 20*log10(sqrt((y.^2)));</span>
+0213 
+0214 
+0215 <span class="comment">% keyboard</span>
+0216 nchan=size(y,2);
+0217 
+0218 <span class="comment">%update the oscillogram</span>
+0219 <span class="keyword">for</span> rr = 1:nchan
+0220     set(hl(rr),<span class="string">'ydata'</span>,y(:,rr));
+0221 <span class="keyword">end</span>
+0222 
+0223 <span class="comment">%(maxint/.abs(ActualVal)).*10*log10</span>
+0224 
+0225 <span class="comment">%get the elapsed time since starting acquisition</span>
+0226 mytoc=toc;
+0227 
+0228 
+0229 <span class="comment">% Logfilename</span>
+0230 <span class="comment">% seconds remaining</span>
+0231 <span class="comment">% samples lost</span>
+0232 <span class="comment">% SIZE ON DISK!!!</span>
+0233 <span class="comment">%eval(['!dir /T ',tmpl])</span>
+0234 
+0235 
+0236 
+0237  tmplogf=get(cb_obj,<span class="string">'LogFileName'</span>);
+0238 <span class="comment">% evalstring=['[status, result] = system(''dir /W ', tmplogf,'''',')' ]</span>
+0239 <span class="comment">% eval(evalstring)</span>
+0240 
+0241 
+0242 <span class="comment">% Samples aqcuired</span>
+0243 <span class="comment">%              figure(hfsyncdat)</span>
+0244 <span class="comment">%                     if strcmp (myloggingmode,'Disk&amp;Memory')</span>
+0245 <span class="comment">%                                [mondata,montime,monabstime,monevents] = getdata(AIADLINK2213,get(AIADLINK2213,'SamplesAvailable'));</span>
+0246 <span class="comment">%                               % my data for minitoring the result of sync attempts</span>
+0247 <span class="comment">%                               % hfinv=findobj('type','figure','name','emaep</span>
+0248 <span class="comment">%                               % gsync');</span>
+0249 <span class="comment">%                         elseif  strcmp (myloggingmode,'Disk')</span>
+0250 <span class="comment">%                             nsaquired=get(AIADLINK2213,'SamplesAcquired');</span>
+0251 <span class="comment">%                             disp([' aquired ',num2str(nsaquired),' samples']);</span>
+0252 <span class="comment">%                         end</span>
+0253 <span class="comment">%</span>
+0254 
+0255 
+0256 <span class="comment">%update the title text</span>
+0257 <span class="comment">%(num2str converts numeric data to a text string so that it can be</span>
+0258 <span class="comment">%displayed)</span>
+0259 <span class="comment">% set(htitle,'string',[num2str(round(mytoc)),' s. recorded ',num2str(327-round(mytoc)),'s. remaining ', get(cb_obj,'running'),' ' ,tmplogf]);</span>
+0260 set(htitle,<span class="string">'string'</span>,[num2str(round(mytoc)),<span class="string">' s. recorded, Recording Status: '</span>, get(cb_obj,<span class="string">'running'</span>),<span class="string">', Filename: '</span> ,tmplogf]);
+0261 drawnow;
+0262 
+0263 
+0264 
+0265 <span class="comment">%</span>
+0266 <span class="comment">% % from myscope_3.m</span>
+0267 <span class="comment">% % should not go here CHANGE!</span>
+0268 <span class="comment">% dbmin=-90;</span>
+0269 <span class="comment">% % xdata=[0;0]; % comm out:</span>
+0270 <span class="comment">% ydata=[dbmin;0];</span>
+0271 <span class="comment">% %hl=plot(xdata,ydata);</span>
+0272 <span class="comment">%</span>
+0273 <span class="comment">% %display only makes sense with fixed y axis</span>
+0274 <span class="comment">% %As matlab normalizes the data from the windows AD convertor to +/- 1, set</span>
+0275 <span class="comment">% %the maximimum db value intially to 0</span>
+0276 <span class="comment">% ylim([dbmin 0]);</span>
+0277 <span class="comment">% ylabel('dB');</span>
+0278 <span class="comment">%</span>
+0279 <span class="comment">% y=sqrt(mean(y.*y));</span>
+0280 <span class="comment">% %convert to dB</span>
+0281 <span class="comment">% y=20*log10(y);</span>
+0282 <span class="comment">% %get the existing ydata in case the user has changed the baseline value in</span>
+0283 <span class="comment">% %ydata(1)</span>
+0284 <span class="comment">% ydata=get(hl,'ydata');</span>
+0285 <span class="comment">% ydata(2)=y;</span>
+0286 <span class="comment">% %update the oscillogram</span>
+0287 <span class="comment">% set(hl,'ydata',ydata);</span>
+0288 
+0289 
+0290 
+0291 
+0292 
+0293 
+0294 <span class="comment">% DIGITAL IO</span>
+0295 <span class="comment">%</span>
+0296 <span class="comment">% status :</span>
+0297 <span class="comment">% get(AIADLINK2213,'running')</span>
+0298 <span class="comment">%</span>
+0299 <span class="comment">%fn='LogFileN04.daq'</span>
+0300 <span class="comment">%[data, time, abstime, events, daqinfo] = daqread(fn);</span>
+0301 <span class="comment">%daqinfo = daqread(fn,'info')</span>
+0302 <span class="comment">%</span>
+0303 <span class="comment">%dio = digitalio('nidaq','Dev1');</span>
+0304 <span class="comment">%dio_device = digitalio( 'mwadlink', 0) %Opens DIO functionality of device #0 (DAQ-2013)</span>
+0305 <span class="comment">%di_lines = addline(dio_device, 0:7, 'out') %Adds channels 0-7 to dio_device and sets them as input</span>
+0306 <span class="comment">%di_value = getvalue(di_lines) %Read the digital input values on channels 0-7 of Port A</span>
+0307 <span class="comment">%putvalue(dio.Line(1:4),data)</span>
+0308 <span class="comment">%putvalue(dio_device.Line(1:4),data)</span>
+0309 
+0310 <span class="comment">% should go to callback:</span>
+0311</pre></div>
+<hr><address>Generated on Wed 30-Jan-2013 17:04:26 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

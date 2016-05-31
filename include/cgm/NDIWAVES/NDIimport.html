@@ -1,0 +1,259 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of NDIimport</title>
+  <meta name="keywords" content="NDIimport">
+  <meta name="description" content="Purpose:  - Import NDI WAVE FILE,">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">NDIWAVES</a> &gt; NDIimport.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for NDIWAVES&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>NDIimport
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Purpose:  - Import NDI WAVE FILE,</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function  varargout=NDIimport(fileToRead1,varargin); </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Purpose:  - Import NDI WAVE FILE,
+           - correct the time axis
+ 
+ Imports data from the specified file
+ 
+ Syntax:
+ [...] = NDIimport(); displays this help message
+
+ NDIimport(fileToRead1), reads fileToRead1 but returns empty matrix
+
+ [data,...] = NDIimport(fileToRead1), reads fileToRead1 and returns 
+ a 3D data array The first dimension equals the number of aquired samples, 
+ the second dimension are x,y,z,q0,qx,qy,z,0 and the third dimension is
+ the number of sensors. 
+
+ [data,...] = NDIimport(fileToRead1,'QUATERNION') is the same as data=NDIimport(fileToRead1),
+ (i.e. data are left in standard NDI format using quaternions)
+ 
+ [data] = NDIimport(fileToRead1,'SPHERICAL') returns x,y,z,phi,theta,NaN,NaN
+ in the second dimension. They alre also converted to deg for the analogy
+ with the Carstens way of representation.
+
+ [data] = NDIimport(fileToRead1,'SPHERICALMKT') returns x,y,z,phi,theta,NaN,NaN
+ in the second dimension as adopted from mkt. They alre also converted to deg for the analogy
+ with the Carstens way of representation.
+s
+ [data,NDIdescr] = NDIimport(fileToRead1, ... ) also returns the descriptor as found in
+ the Spread sheet
+
+ [data,NDIdescr,rawdata] = NDIimport(fileToRead1, ... ) also returns the original
+ 2D data matrix after correcting the time axis as described by Melanie
+ Scholz. 
+
+ [data,NDIdescr,rawdata,timeAx] = NDIimport(fileToRead1, ... ) returns the
+ time axis
+
+  CG $17-Dec-2011$ 18:19:37
+
+ CHANGELOG:
+ $17-Dec-2011$
+ +  Spincalc -&gt; SpinCalc
+ +  Exports NDI sensor status variable in SPHERICAL MODE</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="NDIwave2pos.html" class="code" title="function NDIwave2pos(inpath,outpath,sessfile,triallist,sensornames,ndig,filterspecs,idownfac)">NDIwave2pos</a>	NDIwave2pos(inpath,outpath,sessfile,triallist,sensornames,ndig,filterspecs,idownfac)</li><li><a href="getsynchWaveNIDAQ_mkt.html" class="code" title="function getsynchWaveNIDAQ_mkt(daqFile,smpte_chn_NI,NDIsessionroot,smpte_chn_WAVE,session,filelist,sessfile)">getsynchWaveNIDAQ_mkt</a>	Trial number might be incorrect</li></ul>
+<!-- crossreference -->
+
+
+<h2><a name="_download"></a>DOWNLOAD <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<p><a href="NDIimport.m">NDIimport.m</a></p>
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function  varargout=NDIimport(fileToRead1,varargin);</a>
+0002 <span class="comment">% Purpose:  - Import NDI WAVE FILE,</span>
+0003 <span class="comment">%           - correct the time axis</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">% Imports data from the specified file</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% Syntax:</span>
+0008 <span class="comment">% [...] = NDIimport(); displays this help message</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% NDIimport(fileToRead1), reads fileToRead1 but returns empty matrix</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">% [data,...] = NDIimport(fileToRead1), reads fileToRead1 and returns</span>
+0013 <span class="comment">% a 3D data array The first dimension equals the number of aquired samples,</span>
+0014 <span class="comment">% the second dimension are x,y,z,q0,qx,qy,z,0 and the third dimension is</span>
+0015 <span class="comment">% the number of sensors.</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">% [data,...] = NDIimport(fileToRead1,'QUATERNION') is the same as data=NDIimport(fileToRead1),</span>
+0018 <span class="comment">% (i.e. data are left in standard NDI format using quaternions)</span>
+0019 <span class="comment">%</span>
+0020 <span class="comment">% [data] = NDIimport(fileToRead1,'SPHERICAL') returns x,y,z,phi,theta,NaN,NaN</span>
+0021 <span class="comment">% in the second dimension. They alre also converted to deg for the analogy</span>
+0022 <span class="comment">% with the Carstens way of representation.</span>
+0023 <span class="comment">%</span>
+0024 <span class="comment">% [data] = NDIimport(fileToRead1,'SPHERICALMKT') returns x,y,z,phi,theta,NaN,NaN</span>
+0025 <span class="comment">% in the second dimension as adopted from mkt. They alre also converted to deg for the analogy</span>
+0026 <span class="comment">% with the Carstens way of representation.</span>
+0027 <span class="comment">%s</span>
+0028 <span class="comment">% [data,NDIdescr] = NDIimport(fileToRead1, ... ) also returns the descriptor as found in</span>
+0029 <span class="comment">% the Spread sheet</span>
+0030 <span class="comment">%</span>
+0031 <span class="comment">% [data,NDIdescr,rawdata] = NDIimport(fileToRead1, ... ) also returns the original</span>
+0032 <span class="comment">% 2D data matrix after correcting the time axis as described by Melanie</span>
+0033 <span class="comment">% Scholz.</span>
+0034 <span class="comment">%</span>
+0035 <span class="comment">% [data,NDIdescr,rawdata,timeAx] = NDIimport(fileToRead1, ... ) returns the</span>
+0036 <span class="comment">% time axis</span>
+0037 <span class="comment">%</span>
+0038 <span class="comment">%  CG $17-Dec-2011$ 18:19:37</span>
+0039 <span class="comment">%</span>
+0040 <span class="comment">% CHANGELOG:</span>
+0041 <span class="comment">% $17-Dec-2011$</span>
+0042 <span class="comment">% +  Spincalc -&gt; SpinCalc</span>
+0043 <span class="comment">% +  Exports NDI sensor status variable in SPHERICAL MODE</span>
+0044 
+0045 varargout{1}=[]; <span class="comment">% data</span>
+0046 varargout{2}=[]; <span class="comment">% descriptor</span>
+0047 varargout{3}=[]; <span class="comment">% timeax</span>
+0048 error(nargchk(0, 2, nargin));
+0049 
+0050 <span class="keyword">if</span> nargin &lt; 1,
+0051     eval(<span class="string">'help NDIimport'</span>);
+0052     warning(<span class="string">'returning empty matrix'</span>)
+0053     <span class="keyword">return</span>;
+0054 <span class="keyword">end</span>;
+0055 
+0056 retformatuse=<span class="string">'QUATERNION'</span>;
+0057 <span class="keyword">if</span> nargin&gt;1
+0058     retformat=upper(varargin{1});
+0059     <span class="keyword">switch</span> retformat
+0060         <span class="keyword">case</span> <span class="string">'QUATERNION'</span>
+0061             retformatuse=<span class="string">'QUATERNION'</span>;
+0062         <span class="keyword">case</span> <span class="string">'SPHERICAL'</span>
+0063             retformatuse=<span class="string">'SPHERICAL'</span>;
+0064         <span class="keyword">otherwise</span>
+0065             warning(<span class="string">'return format not recognized: returning empty returns!!'</span>);
+0066             <span class="keyword">return</span>;
+0067     <span class="keyword">end</span>
+0068 <span class="keyword">end</span>
+0069 <span class="comment">% disp(['will return data as ' retformatuse])</span>
+0070 
+0071 ndim=7;
+0072 newData1 = importdata(fileToRead1);
+0073 rawdata=newData1.data;
+0074 NDIdescr=newData1.textdata;
+0075 <span class="comment">% Create new variables in the base workspace from those fields.</span>
+0076 <span class="comment">% vars = fieldnames(newData1);</span>
+0077 <span class="comment">% for i = 1:length(vars)</span>
+0078 <span class="comment">%     assignin('base', vars{i}, newData1.(vars{i}));</span>
+0079 <span class="comment">% end</span>
+0080 
+0081 
+0082 <span class="comment">% calculate correct Time Axis for articulatory data (see snippets of mail / Xls-File by Melanie)</span>
+0083 <span class="comment">%myStamps='Z:\myfiles\potsdam\NDIWaves\Melaniesstamps.xls'</span>
+0084 <span class="comment">%xlsfinfo(myStamps)</span>
+0085 <span class="comment">%[status,sheets,format]=xlsread(myStamps,'stamps');</span>
+0086 WaveSR=22050;
+0087 <span class="comment">%The WavID is the actual sample number in the Wav file closest to the kinematic sample.</span>
+0088  wavId=rawdata(:,3);
+0089 wavIdShift=circshift(wavId,-1);
+0090 sampdur= (wavIdShift -  wavId) ./ WaveSR ;
+0091 wavId_1=wavId(1)./WaveSR; <span class="comment">% compare: disp(status(1,4))</span>
+0092 <span class="comment">% timeAx: Artikulatorische ZeitAchse in Sekunden</span>
+0093 timeAx=wavId_1 + cumsum(sampdur);
+0094 timeAx=[wavId_1  ; timeAx(1:end-1) ];
+0095 rawdata(:,1)=timeAx;
+0096 
+0097 NDIdescriptor=char(NDIdescr);
+0098 II=strmatch(<span class="string">'Sensor'</span>,NDIdescriptor);
+0099 
+0100 sensorstatus=rawdata(:,II(2:2:end));
+0101 sensorID=rawdata(:,II(1:2:end));
+0102 
+0103 II=II(1:2:end);
+0104 nsensors=length(II);
+0105 <span class="comment">%descriptor=NDIdescriptor([II(1)+2:II(1)+8],:);</span>
+0106 data=nan(size(rawdata,1), 7, nsensors);
+0107 
+0108 <span class="keyword">if</span>(size(NDIdescriptor,1)&gt;size(rawdata,2))
+0109     rawdata(:, size(rawdata,2)+1:size(NDIdescriptor,1)) = NaN;
+0110 <span class="keyword">end</span>
+0111 
+0112 <span class="keyword">for</span> ll=1:nsensors
+0113     datIdx=[II(ll)+2:II(ll)+8];
+0114     NDIdescriptor(datIdx,:);
+0115     tmpdat=rawdata(:,datIdx);
+0116     
+0117     <span class="keyword">switch</span> retformatuse
+0118         <span class="keyword">case</span> <span class="string">'QUATERNION'</span>
+0119             data(:,1:ndim,ll)=tmpdat(:,1:ndim);
+0120         <span class="keyword">case</span> <span class="string">'SPHERICAL'</span>
+0121             <span class="comment">% assumption: quaternion tools on path</span>
+0122             <span class="comment">%             here:(180/pi).*phi;</span>
+0123             <span class="comment">%              NDIWAVE2pos: orifac = pi/180;</span>
+0124             <span class="keyword">for</span> idxDatlen=1:length(tmpdat)
+0125                 tmpCart=SpinCalc(<span class="string">'QtoDCM'</span>,tmpdat(idxDatlen,[7 4 5 6]),1e-6,0)*[0 -1 0]';
+0126                 <span class="comment">%norm(sum(tmpCart.^2))</span>
+0127                 [theta,phi,r]=cart2sph(tmpCart(1),tmpCart(2),tmpCart(3)); <span class="comment">% NOTE: phi theta change carried out here!</span>
+0128                 tmpdat(idxDatlen,4:ndim)=NaN;
+0129                 tmpdat(idxDatlen,4)=theta;
+0130                 tmpdat(idxDatlen,5)=phi;
+0131             <span class="keyword">end</span>
+0132             tmpdat(:,4:5)=tmpdat(:,4:5).*(180/pi); <span class="comment">% radians to deg</span>
+0133             
+0134         <span class="keyword">case</span> <span class="string">'SPHERICALMKT'</span>
+0135             <span class="comment">% original Version:</span>
+0136             [az,el]=quat2sph(tmpdat(:,4:7));
+0137             <span class="comment">% vertauschen von az und el</span>
+0138             <span class="comment">%[el,az]=quat2sph(tmpdat(:,4:7));</span>
+0139             tmpdat(:,4:ndim)=NaN;
+0140             tmpdat(:,4)=az;
+0141             tmpdat(:,5)=el;
+0142             
+0143         <span class="keyword">otherwise</span>
+0144             
+0145     <span class="keyword">end</span>
+0146     data(:,1:ndim,ll)=tmpdat(:,1:ndim);
+0147     <span class="comment">%         data(:,4,ll)=(180/pi).*phi;</span>
+0148     <span class="comment">%         data(:,5,ll)=(180/pi).*theta;</span>
+0149     
+0150     <span class="comment">% nanvar((180/pi).*THETA)</span>
+0151     <span class="comment">% nanvar((180/pi).*PHI)</span>
+0152 <span class="keyword">end</span>
+0153 
+0154 <span class="keyword">switch</span> retformatuse
+0155     <span class="keyword">case</span> <span class="string">'QUATERNION'</span>
+0156          descriptor=str2mat(<span class="string">'x[mm]'</span>,<span class="string">'y[mm]'</span>,<span class="string">'z[mm]'</span>,<span class="string">'q0'</span>,<span class="string">'qx'</span>,<span class="string">'qy'</span>,<span class="string">'qz'</span>);
+0157     <span class="keyword">case</span> {<span class="string">'SPHERICAL'</span>,<span class="string">'SPHERICALMKT'</span>}
+0158            descriptor=str2mat(<span class="string">'x[mm]'</span>,<span class="string">'y[mm]'</span>,<span class="string">'z[mm]'</span>,<span class="string">'az'</span>,<span class="string">'el'</span>,<span class="string">'status'</span>,<span class="string">'compdist'</span>);
+0159            data(:,6,:)=sensorstatus;
+0160 <span class="comment">%            keyboard</span>
+0161     <span class="keyword">otherwise</span>
+0162         
+0163 <span class="keyword">end</span>
+0164 
+0165 
+0166 varargout{1}=data;
+0167 varargout{2}=descriptor;
+0168 varargout{3}=rawdata;
+0169 varargout{3}=timeAx;
+0170</pre></div>
+<hr><address>Generated on Wed 30-Jan-2013 17:04:26 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

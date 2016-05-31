@@ -1,0 +1,141 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of dataaqNIonly</title>
+  <meta name="keywords" content="dataaqNIonly">
+  <meta name="description" content="% DOCUMENT TITLE">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">NDIWAVES</a> &gt; dataaqNIonly.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for NDIWAVES&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>dataaqNIonly
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>% DOCUMENT TITLE</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [lh]=dataaqNIonly(src,event) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment">% DOCUMENT TITLE
+ INTRODUCTORY TEXT
+%</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="prompter_NIDAQ.html" class="code" title="function prompterNDI_NIDAQ(stimfile,logfile,trial_duration,fontsize,aDaqNameCommon,startwav,endwav);">prompter_NIDAQ</a>	prompterNDI_NIDAQ Prompt program for NDI wave system, also controlling</li></ul>
+<!-- crossreference -->
+
+
+<h2><a name="_download"></a>DOWNLOAD <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<p><a href="dataaqNIonly.m">dataaqNIonly.m</a></p>
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">%% DOCUMENT TITLE</span>
+0002 <span class="comment">% INTRODUCTORY TEXT</span>
+0003 <span class="comment">%%</span>
+0004 <a name="_sub0" href="#_subfunctions" class="code">function [lh]=dataaqNIonly(src,event)</a>
+0005 <span class="comment">%</span>
+0006 
+0007 
+0008 <span class="comment">%lh = s.addlistener('DataRequired', @(src,event)...</span>
+0009 <span class="comment">%     src.queueOutputData([outputData0 outputData1]));</span>
+0010 
+0011 
+0012 <span class="comment">%lh = addlistener('eventName',@callback)</span>
+0013 <span class="comment">%lh = addlistener('eventName', @(src, event) expr)</span>
+0014 
+0015 <span class="comment">%</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">% feature memstats</span>
+0018 <span class="comment">%</span>
+0019 <span class="comment">% user = memory</span>
+0020 <span class="comment">% anzahl floats (user.MaxPossibleArrayBytes/8)</span>
+0021 <span class="comment">%</span>
+0022 <span class="comment">% Anzahl Elemente bei 2 Kanaelen:</span>
+0023 <span class="comment">% user.MaxPossibleArrayBytes/8</span>
+0024 <span class="comment">% anzahl sekunden bei 2 channels</span>
+0025 <span class="comment">% (((user.MaxPossibleArrayBytes/8)/2)/25000)</span>
+0026 <span class="comment">% und das ganze in Stunden:</span>
+0027 <span class="comment">% (((user.MaxPossibleArrayBytes/8)/2)/25000)/3600</span>
+0028 <span class="comment">%  9.6570</span>
+0029 <span class="comment">%</span>
+0030 <span class="comment">%disp(srate)</span>
+0031 
+0032 hfDAQFound=findobj(<span class="string">'Tag'</span>,<span class="string">'hfDAQ'</span>);
+0033 figure(hfDAQFound)
+0034 
+0035 <span class="keyword">global</span> DAQData srate nSampsAcquired datsize nchan unit NIsession private daqOutFile
+0036 
+0037 
+0038 <span class="comment">% get from workspace</span>
+0039 <span class="comment">% DAQData=evalin('caller','DAQData');</span>
+0040 <span class="comment">% srate=evalin('caller','srate');</span>
+0041 <span class="comment">% nSampsAcquired=evalin('caller','nSampsAcquired');</span>
+0042 <span class="comment">% datsize=evalin('caller','datsize');</span>
+0043 
+0044 idxSt=nSampsAcquired+1;
+0045 
+0046 
+0047 <span class="comment">% not clear yet how to treat overrun</span>
+0048 <span class="keyword">if</span> (nSampsAcquired&gt;=datsize)
+0049     <span class="comment">% nchan=evalin('caller','nchan');</span>
+0050     <span class="comment">% unit=evalin('caller','unit');</span>
+0051     <span class="comment">%NIsession=evalin('caller','NIsession');</span>
+0052     <span class="comment">%private=evalin('caller','private');</span>
+0053     
+0054     <span class="comment">% daqOutFile=evalin('caller','daqOutFile');</span>
+0055     <span class="comment">%warning('Size of Allocated data exceeded, saving data and stopping aquisition');</span>
+0056     NIsession.stop();
+0057     disp([<span class="string">'bufsize exceeded, saving data to '</span> daqOutFile]);
+0058     DAQData(nSampsAcquired+1:<span class="keyword">end</span>,:)=[];
+0059     save (daqOutFile,<span class="string">'DAQData'</span>,<span class="string">'nSampsAcquired'</span>,<span class="string">'srate'</span>,<span class="string">'nchan'</span>,<span class="string">'unit'</span>,<span class="string">'private'</span>);
+0060     disp([<span class="string">'aquired '</span> num2str(nSampsAcquired) <span class="string">' samples'</span>]);
+0061     <span class="comment">%disp(srate)</span>
+0062     disp([<span class="string">'recorded '</span>  num2str(nSampsAcquired/srate) <span class="string">' secs.'</span> ])
+0063     disp([<span class="string">'typing &lt;return&gt; will not save data again'</span> ])
+0064     
+0065 <span class="keyword">else</span>
+0066     nNewRows=(size(event.Data,1));
+0067     
+0068     <span class="comment">% hardcoded samplerate</span>
+0069     nsecs=nNewRows/srate;
+0070     <span class="comment">%disp([nNewRows nsecs])</span>
+0071     nSampsAcquired=nSampsAcquired+nNewRows;
+0072     <span class="comment">%disp(nSampsAcquired)</span>
+0073     DAQData(idxSt:nSampsAcquired,:)=event.Data;
+0074     <span class="comment">% back to workspace</span>
+0075     <span class="comment">%assignin('caller','DAQData',DAQData);</span>
+0076     <span class="comment">%assignin('caller','nSampsAcquired',nSampsAcquired);</span>
+0077     doplot=1;
+0078     whos event.Data
+0079     
+0080     <span class="keyword">if</span> doplot
+0081         subplot(1,1,1)
+0082         plot(event.TimeStamps, event.Data(:,1))
+0083         <span class="comment">%set(gca,'Ylim',[-0.1 0.1])</span>
+0084         
+0085 <span class="comment">%        subplot(2,1,2)</span>
+0086 <span class="comment">%        plot(event.TimeStamps, event.Data(:,2))</span>
+0087         <span class="comment">%dat=event.Data;</span>
+0088         set(gca,<span class="string">'Ylim'</span>,[-5 5])
+0089     <span class="keyword">end</span>
+0090     
+0091 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 30-Jan-2013 17:04:26 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>
