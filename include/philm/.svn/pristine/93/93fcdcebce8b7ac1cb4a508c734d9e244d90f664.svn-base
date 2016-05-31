@@ -1,0 +1,10 @@
+function prompter_writelogfile(mystring);
+
+P=prompter_gmaind;
+%disp('--------- log message --------');
+disp(['Logged: ' mystring]);
+%disp('------------------------------');
+status=fwrite(P.logfilefid,mystring,'uchar');
+
+    %check status??
+    

@@ -1,0 +1,9 @@
+function prompter_evaluserfunc(myfunc,myname);
+if ~isempty(myfunc)
+    try
+        eval(myfunc);
+    catch
+        prompter_writelogfile(['<Error evaluating user ' myname ' function ' myfunc '>' crlf '<' lasterr '>' crlf]);
+    end;
+    
+end;

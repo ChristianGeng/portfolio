@@ -1,0 +1,50 @@
+function [active,sample,sweep,dataS,dataC,pos] = getEmaAll (s) 
+% GETEMAALL -- get all current data from AG500
+% [active,sample,sweep,dataS,dataC,pos]=getEmaAll(s), where s is a java object of class 
+%    java.net.Socket 
+%
+%assumptions:
+%    ssh tunneling open for port 30303 or port open
+%    Cs5recorder running
+%
+%    open tunneling using
+%    ssh -L 30303:192.168.1.XXX:30303 csop@192.168.1.XXX
+%    where XXX is the server number plus 150
+% example: 
+%    import java.net.*
+%    import java.io.*
+%    s = Socket('AG500Server', 30303);
+%    [active,sample,sweep,dataS,dataC,pos] = getEmaAll(s);
+% See also GETEMASAMPLE GETEMADATAS GETEMADATAC GETEMAPOS GETEMAACTIVE
+% GETEMASWEEP
+%    lbo 12/08
+
+import java.io.*;
+import java.net.*;
+import org.ema.*;
+
+if nargin ~= 1 || ~isa(s, 'java.net.Socket')
+    error 'Argument si must be of class java.net.Socket';
+end
+
+%get input and output streams
+si=s.getInputStream;
+so=s.getOutputStream;
+
+%send command ('data\n')
+so.write([abs('data') 10]);
+so.flush;
+
+%read 
+rec=Recmon;
+try
+    rec.read(si);
+catch
+    error(['getEmaAll: ' lasterror]);
+end
+active = int32(rec.getActive);
+sample = int32(rec.getSample);
+dataC = rec.getDataC;
+dataS = rec.getDataS;
+pos = rec.getPos;
+sweep=int32(rec.getSweep);

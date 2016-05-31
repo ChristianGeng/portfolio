@@ -1,0 +1,119 @@
+Overview of actions in prompter programs
+=======================
+prompter_parallel_main
+=======================
+
+prompter_ini_base: usersetfunc
+prompter_restorefigpos: userset2func
+===================
+in main next loop
+==================
+
+prompter_makepromptvisible;
+prompter_dotrafficlights('getready');
+prompter_paralleloutctl('reset') and 'trial'
+                
+prompter_playwav('list',P.istim);
+prompter_evaluserfunc(P.userstartfunc,'start');
+prompter_playwav('start');
+prompter_dotrafficlights('go');
+prompter_paralleloutctl('start');==> userparallelstartfunc
+
+while running loop
+
+prompter_paralleloutctl('stop'); ===> userparallelstopfunc
+prompter_playwav('end');
+prompter_nextstim(mytime,mytoc); (does trafficlights stop)
+prompter_evaluserfunc(P.userstopfunc,'stop')
+
+[time of day taken immediately before parallel start and stop]
+
+=======================
+prompter_parallel_trigagmain
+=======================
+
+prompter_ini_base: usersetfunc
+prompter_iniag500fig; ===> agsetfunc
+
+prompter_restorefigpos: userset2func
+===================
+in main next loop
+==================
+
+prompter_makepromptvisible;
+prompter_dotrafficlights('getready');
+checkagready4next
+prompter_paralleloutctl('reset') and 'trial'
+                
+prompter_playwav('list',P.istim);
+prompter_evaluserfunc(P.userstartfunc,'start');
+
+prompter_startag (=wait for attention)
+prompter_playwav('start');
+prompter_dotrafficlights('go');
+userattnfunc
+
+wait for sweep
+prompter_paralleloutctl('start');==> userparallelstartfunc
+
+while running loop
+
+prompter_agstop
+prompter_paralleloutctl('stop'); ===> userparallelstopfunc
+waitforsweepend
+
+prompter_playwav('end');
+prompter_nextstim(mytime,mytoc); (does trafficlights stop)
+prompter_evaluserfunc(P.userstopfunc,'stop')
+
+[time of day taken 
+(1) immediately after attention detected 
+(2) immediately after sweep detected = immediately before parallel start]
+(3) after detecting sweep end
+Note: because ag status lines are not polled very fast the trial durations calculated from these 
+time of day can easily be 50ms different from that calculation from the number of AG samples]
+=======================
+prompter_parallel_sonixmain
+=======================
+
+prompter_ini_base: usersetfunc
+
+iniok=prompter_inisonix; ===> usersonixsetfunc
+prompter_sonixfreeze(1,1);  %activate the desired triggervalue
+prompter_sonixfreeze(0);
+prompter_sonixfreeze(1,0);  %but now turn off the trigger until the 'next' command if triggermode is not 'continuous'
+prompter_sonixfreeze(0);
+
+prompter_restorefigpos: userset2func
+===================
+in main next loop
+==================
+
+prompter_makepromptvisible;
+prompter_dotrafficlights('getready');
+prompter_sonixfreeze(1,1);  %freeze and activate trigger if currently disabled
+
+prompter_paralleloutctl('reset') and 'trial'
+                
+prompter_playwav('list',P.istim);
+prompter_evaluserfunc(P.userstartfunc,'start');
+
+prompter_playwav('start');
+prompter_dotrafficlights('go');
+
+prompter_paralleloutctl('start');==> userparallelstartfunc
+prompter_sonixfreeze(0);                    
+
+while running loop
+
+prompter_sonixfreeze(1,0);  %freeze and disable trigger if triggermode not 'continuous'
+
+prompter_paralleloutctl('stop'); ===> userparallelstopfunc
+prompter_playwav('end');
+prompter_nextstim(mytime,mytoc); (does trafficlights stop)
+prompter_sonixwrite;
+prompter_sonixfreeze(0);
+prompter_evaluserfunc(P.userstopfunc,'stop')
+
+[time of day taken immediately before parallel start and stop]
+

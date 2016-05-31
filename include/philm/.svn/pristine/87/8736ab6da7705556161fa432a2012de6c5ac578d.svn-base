@@ -1,0 +1,73 @@
+function [s,varargout] = lida_connect (varargin)
+% LIDA_CONNECT --- open a socket to lida host
+% s = lida_connect(timeout) returns Java Object of class Socket
+% [s,si] = lida_connect(timeout) additionally returns the socket's Java
+% InputStream
+% [s,si,so] = lida_connect(timeout) additionally returns the socket's Java
+% OutputStream
+% The optional parameter timeout maybe used to specify a timout interval
+% in milliseconds for subsequent reading operations of the socket.
+%
+% The welcome string "200 Welcome" will be read so that the InputStream
+% will be empty thereafter
+%	Output of this on the terminal is suppressed if a second input argument
+%	is present
+%
+% Assumptions:
+%    ssh tunneling open for port 30303 or port open
+%    Cs5recorder running
+%
+% Per default, the IPS Munich settings are used for connection, i.e.
+% IP=141.84.138.216 PORT=30303
+% Alternatively, if a struct named "lida" with the fields "host" (IP / hostname
+% of lida) and port (TCP/IP port to connect to) exists in a file
+% "lida_cfg.mat", these values will be taken to override the default.
+%
+% lbo 19Aug08, phil 12.08 (second input argument)
+%
+%   Updates
+%       6.2012 Prepare for alternative AG500/501 systems: Message if not
+%       using default configuration
+
+if nargout > 3
+    error('Too many output arguments');
+end
+
+if nargin > 2
+    error('Too many input arguments');
+end
+
+import java.io.*;
+import java.net.*
+
+
+deflida.host='141.84.138.216';
+deflida.port=30303;
+matname='lida_cfg.mat';
+
+if exist(matname,'file')
+    lida=mymatin(matname, 'lida', deflida);
+    disp('lida_connect: Connecting using settings in configuration file');
+    disp(lida);
+else
+    lida=deflida;
+end
+s=Socket(lida.host, lida.port);
+if nargin == 1
+    s.setSoTimeout(varargin{1});
+end
+
+
+if nargout >= 2
+    varargout{1} = s.getInputStream;
+end
+
+if nargout == 3
+    varargout{2} = s.getOutputStream;
+end
+
+greet=lida_greetings(s);
+if nargin<2 
+	disp(greet(1:(end-1))); 
+end;
+

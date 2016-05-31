@@ -1,0 +1,207 @@
+function prompter_parallel_main(stimfile,logfile,S);
+% PROMPTER_PARALLEL_MAIN Prompt program with synch signal output on parallel port. Will also run when port n.a
+% function prompter_parallel_main(stimfile,logfile,S);
+% prompter_parallel_main: Version 20.05.2012
+%
+%	Syntax
+%       stimfile and logfile are required input arguments.
+%       S is optional. If present it must be a struct whose fields control
+%       optional settings (override defaults).
+%       See prompter_ini_base for full details on the fields.
+%
+%   Description
+%       Simplest version of prompter programs. In addition to normal prompt
+%       display it can
+%       output synch signal to parallel port at start of trial.
+%       Can also control vtg55 video timer.
+%       This version can be used when daq toolbox access to parallel port
+%       not available.
+%       Thus also useful for testing integrity of prompt files before
+%       experiment because it can be run when parallel port in not
+%       accessible (this requires administrator privileges on Windows XP
+%
+%   See Also PROMPTER_PARALLEL_TRIGIN, PROMPTER_PARALLEL_TRIGAG
+%
+
+functionname='PROMPTER_PARALLEL_MAIN: Version 20.05.2012';
+
+Sin=[];
+if nargin>2 Sin=S; end;
+
+prompter_ini_base(functionname,stimfile,logfile,Sin)
+
+%This should be placed after all figures have been created
+%i.e after any additional figures for ema, epg, transshift etc.
+prompter_restorefigpos;
+
+parport=prompter_getparport;
+prompter_paralleloutctl('ini',parport);
+
+
+all_done=0;
+prompter_showhelp;
+while ~all_done
+    P=prompter_gmaind;
+    S=prompter_gstimd;
+    ps=S.ps;
+    cs=S.cs;
+    ts=['<Start of Sequence> ' datestr(now) crlf];
+    prompter_writelogfile(ts);
+    prompter_showmsg(P.newsequencemsg);
+    
+%    disp('Starting prompt sequence');
+    disp('Hit any key to continue');
+    pause;
+    
+    P.istim=1;
+    P.repeatstr='';
+    prompter_showg(ps{P.istim});
+    P=prompter_gmaind;
+    prompter_dotrafficlights('stop');
+    
+    prompter_updatefigs;
+    prompter_showstim2investigator(P.istim)
+    
+    
+    P.finished=0;
+    
+    prompter_smaind(P);
+    while ~P.finished
+
+		if P.autonext
+			mycmd='n';
+			pause(P.autodelay);
+		else
+
+			mycmd=abartstr('Command: ','n');
+		end;
+
+        if mycmd=='n'
+            if ~P.ok2rec
+                disp('Use M command to continue');
+            else
+                P=prompter_gmaind;            
+                if P.hidemode==1 prompter_makepromptvisible; end;                
+                prompter_dotrafficlights('getready');
+                prompter_paralleloutctl('reset');
+                prompter_paralleloutctl('trial',P.irun);
+                
+                if P.usewavlist
+                    prompter_playwav('list',P.istim);
+                end;
+                if ~isempty(P.userstartfunc)
+                    eval(P.userstartfunc,'disp(''Error evaluating userstartfunc'');disp(lasterr)');
+                end;
+                
+                prompter_flushlogtext;
+                P=prompter_gmaind;
+                iruns=int2str(P.irun);
+                htinfo=P.infohandle;
+                set(htinfo(1),'string',iruns,'color',P.htinfostopcol);
+                drawnow;
+                sx=int2str([P.irun P.istim]);   %start setting up string that will be written to log file
+                
+                
+                if P.usestartwav
+                    prompter_playwav('start');
+                end;
+                
+%                disp(['Recording trial/stimulus ' sx]);
+                mytime=now;
+                prompter_dotrafficlights('go');
+                
+                prompter_updatefigs;
+                prompter_paralleloutctl('start');
+                tic;
+                set(htinfo(1),'color',P.htinforuncol);
+                drawnow;
+                    clickstop=0;
+                    itoc=toc;
+                    while ((itoc<P.trial_duration) & (~clickstop))
+                        %                pause(trial_duration);
+                        pause(0.020);       %no point in updating any faster
+                        clickstop=get(htinfo(1),'userdata');
+                        itoc=toc;
+                        set(htinfo(1),'string',[iruns ' : ' num2str(itoc,'%4.3f')]);
+                        drawnow;
+                    end;
+                    
+                prompter_paralleloutctl('stop');
+
+                mytoc=toc;
+                set(htinfo(1),'string',[iruns ' : ' num2str(mytoc,'%4.3f')],'color',P.htinfostopcol,'userdata',0);
+                
+                if P.useendwav
+                    prompter_playwav('end');
+                end;
+                
+                if ~isempty(P.userstopfunc)
+                    eval(P.userstopfunc,'disp(''Error evaluating userstopfunc'');disp(lasterr)');
+                end;
+                
+                
+%                disp('Stopped');
+                
+                %maybe rest could be subroutine with mytime and mytoc as input
+                [dodo,mytime]=strtok(datestr(mytime));
+                sx=[sx ' ' mytime];
+                sx=[sx ' ' num2str(mytoc)];
+                
+                
+                if P.istim<P.nstim
+                    %display new stimulus immediately to subject
+                    prompter_showg(ps{P.istim+1});
+                    P=prompter_gmaind;
+                    prompter_showstim2investigator(P.istim+1)
+                    
+                    prompter_dotrafficlights('stop');
+                    prompter_updatefigs;
+                    
+                end;
+                
+                
+                
+                %10.03 free comment now has to be entered with explicit command
+                
+                mycomm=[' [' cs{P.istim} P.freecode P.repeatstr ];
+                P.repeatstr='';
+                %write trial number and time of day
+                sx=[sx mycomm];
+                P.logtext_trial=sx;
+                
+                P.irun=P.irun+1;
+                P.istim=P.istim+1;
+                
+                prompter_smaind(P);
+                
+                if P.istim>P.nstim
+                    disp('End of stimuli');
+                    prompter_quit;
+                    
+                    
+                end;
+                
+            end;    %ok2rec            
+        end;			%next
+
+        prompter_commoncmd(mycmd);
+        
+        prompter_autonext;      %check for autonext cancellation
+        P=prompter_gmaind;  %make sure P is up to date for next pass through while loop
+    end;
+    mystr=abartstr('Terminate ? ','y');
+    mystr=lower(mystr);
+    
+    if mystr~='n' all_done=1; end;
+end;
+
+prompter_exit;
+
+if P.daqok
+    delete(parport);
+    clear parport;
+end;
+
+
+
+

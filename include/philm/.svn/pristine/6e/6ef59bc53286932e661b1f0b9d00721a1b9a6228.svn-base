@@ -1,0 +1,113 @@
+function cut2matrix(cutfile,outsuffix,labelv)
+% CUT2MATRIX Convert segment file to table of observations (grouping based on label)
+% function cut2matrix(cutfile,outsuffix,labelv)
+% cut2matrix: Version 24.8.07
+%
+%   Description
+%       All cutfile entries with same label are converted to one record
+%       column names in output matrix are taken from cut_type_label (or
+%       valuelabel structure)
+%       with suffixes '_on', '_off', and '_dur'
+%       (Currently assumes each segment type occurs only once for each
+%       label; if this occurs a warning is issued (only the first occurrence will be stored))
+%       Optional input argument labelv is a vector indicating the columns of the label variable to use
+%           (can be useful if the labels of different segments differ
+%           slightly)
+%
+%   Updates
+%       24.8.07. Input argument labelv added
+
+functionname='cut2matrix. Version 24.8.07';
+
+
+load(cutfile);
+
+if nargin>2
+    label=label(:,labelv);
+end;
+
+
+labelu=unique(label,'rows');
+nlab=size(labelu,1);
+
+typeu=unique(data(:,3));
+ntype=length(typeu);
+
+if exist('valuelabel','var')
+    cut_type_label=valuelabel.cut_type.label;
+    cut_type_value=valuelabel.cut_type.value;
+end;
+
+
+dataon=ones(nlab,ntype)*NaN;
+dataoff=ones(nlab,ntype)*NaN;
+datadur=ones(nlab,ntype)*NaN;
+
+for ilab=1:nlab
+    vv=strmatch(labelu(ilab,:),label);
+    disp(labelu(ilab,:));
+    nv=length(vv);
+    datatmp=data(vv,:);
+    %      keyboard;
+    for ii=1:nv
+        ipi=find(datatmp(ii,3)==typeu);
+        idoub=0;
+        if isnan(dataon(ilab,ipi))
+            dataon(ilab,ipi)=datatmp(ii,1);
+        else
+            idoub=1;
+        end;
+        if isnan(dataoff(ilab,ipi))
+            dataoff(ilab,ipi)=datatmp(ii,2);
+        else
+            idoub=1;
+        end;
+        
+        if idoub
+            disp(['Multiple tokens with same cut type ' int2str(datatmp(ii,3)) ' in record ' int2str(vv(ii))]);
+        else
+            datadur(ilab,ipi)=datatmp(ii,2)-datatmp(ii,1);
+        end;
+        
+    end;
+end;
+
+dbase=cell(ntype,1);
+for ii=1:ntype
+    ipi=find(typeu(ii)==cut_type_value);
+    dbase{ii}=deblank(cut_type_label(ipi,:));
+end;
+
+
+dbase=char(dbase);
+
+%remove empty columns
+
+don=dbase;
+vv=find(all(isnan(dataon)));
+dataon(:,vv)=[];
+don(vv,:)=[];
+
+doff=dbase;
+vv=find(all(isnan(dataoff)));
+dataoff(:,vv)=[];
+doff(vv,:)=[];
+
+ddur=dbase;
+vv=find(all(isnan(datadur)));
+datadur(:,vv)=[];
+ddur(vv,:)=[];
+
+don=strcat(don,'_on');
+doff=strcat(doff,'_off');
+ddur=strcat(ddur,'_dur');
+
+
+data=[dataon dataoff datadur];
+label=labelu;
+descriptor=strvcat(don,doff,ddur);
+unit=repmat('s',[size(data,2) 1]);
+
+comment=framecomment(comment,functionname);
+
+save([cutfile outsuffix],'data','descriptor','unit','label','comment');

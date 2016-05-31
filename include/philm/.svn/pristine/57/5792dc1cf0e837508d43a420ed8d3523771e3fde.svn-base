@@ -1,0 +1,42 @@
+function timeoutsweep=prompter_wait4agsweep
+% function timeoutsweep=prompter_wait4agsweep
+
+AG=prompter_gagd;
+A=AG.Alines;
+
+%wait for actual sweep active
+%check not already triggered
+agstat=prompter_parallelinctl('readlines');
+
+triggered=~agstat(A.sweep);
+if triggered
+    %output to log file
+    if ~isempty(AG.attn2sweeptooslow_msg)
+        prompter_writelogfile([AG.attn2sweeptooslow_msg crlf]);
+    end;
+    
+    
+else
+    disp('waiting for sweep');
+    
+end;
+
+%8.10 not clear how this timeout can occur, if attention has been correctly
+%detected, but it does seem to have happened
+tic;
+timeoutsweep=0;
+while ~triggered & ~timeoutsweep
+    agstat=prompter_parallelinctl('readlines');
+    triggered=~agstat(A.sweep);
+    tcheck=toc;
+    timeoutsweep=tcheck>AG.sweep_timeout;
+end;
+if timeoutsweep
+    prompter_dotrafficlights('stop');
+    prompter_writelogfile(['!!Timed out waiting for sweep !!' crlf]);
+    disp('Type return to continue');
+    keyboard;
+    prompter_resetagstatus;
+end;
+
+    

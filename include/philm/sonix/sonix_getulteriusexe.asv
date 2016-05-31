@@ -1,0 +1,5 @@
+function ulteriusexe=sonix_getulteriusexe
+% SONIX_GETULTERIUSEXE Return full path to exe file for accessing ulterius
+% inter
+% function ulteriusexe=sonix_getulteriusexe
+ulteriusexe='"C:\sonixsdk\sdk_6.0.3_(00.036.203)\bin\ultraInteract.exe"';

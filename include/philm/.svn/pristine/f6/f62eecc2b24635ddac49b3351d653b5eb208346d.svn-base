@@ -1,0 +1,73 @@
+function Data = LoadPos(PosFileName,nchan);
+% LOADPOS Load AG500 pos file
+% Data = LoadPos(PosFileName,nchan)
+% LOADPOS: Version 25.02.2012
+%
+%   Description
+%       Load AG500 position data from the given file (either .mat or raw binary).
+%       Give file name without extension.
+%       First tries to open .mat file. If not found, tries to open .pos file
+%       For .pos files the nchan argument optionally specifies the number
+%       of channels in the input file. If absent it defaults to the AG500
+%       value of 12.
+%       For AG501 data it is assumed that the number of channels can be
+%       determined by inspection of one of the ini files in the amps
+%       subdirectory (done automatically by loadamp and filteramps).
+%       The data are returned as a 3D data matrix arranged nsamp*7*nchan
+%           (i.e sensors as 3rd dimension)
+%       Organisation of second dimension: x, y, z, phi, theta, rms, extra
+%       Binary .pos file will thus be assumed to have 7*nchan single values per sample.
+%       If no input file found, output argument is returned empty
+%
+%   Updates
+%       02.2012 add optional nchan input argument
+%
+%   See Also
+%       LOADAMP, LOADPOS_SPH2CARTM
+
+
+
+Ndim=3+2+2; %cartesian+spherical+(rms,extra)
+Nchan=12;
+Ncol=Nchan*Ndim;
+
+if nargin>1 Nchan=nchan; end;
+
+fileext='.pos';
+
+Data=[];
+
+
+if exist([PosFileName '.mat'],'file')
+        S=load(PosFileName);
+        %in future allow all variables in mat file to be returned in the structure
+        Data=double(S.data);
+        return;
+
+else
+
+
+
+
+    [fid, msg] = fopen([PosFileName fileext], 'r');	% open data file
+    if fid == -1,
+        disp([msg ' Filename: ' PosFileName]);
+        return;
+    end
+
+    [RawData, DSize] = fread(fid, inf, 'single');	% read raw data
+
+
+    NumSamples = floor(length(RawData) / Ncol);
+    fclose(fid);
+
+    if mod(length(RawData), Ncol) ~= 0
+        disp('WARNING: File length is not a whole-numbered multiple of sample length!!!')
+    end
+
+    Data=(reshape(RawData,[Ncol NumSamples]))';
+
+    %to return as 3d array uncomment this (could be an option)
+    Data=reshape(Data,[NumSamples Ndim Nchan]);
+
+end;

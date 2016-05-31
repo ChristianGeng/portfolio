@@ -1,0 +1,133 @@
+function rawpos2mat(rawpath,matpath,triallist,samplerate,briefcomment,sensornames,posampflag,rmslim)
+% RAWPOS2MAT Convert pos files (e.g from cs5calcpos) to mat files
+% function rawpos2mat(rawpath,matpath,triallist,samplerate,briefcomment,sensornames,posampflag,rmslim)
+% rawpos2mat: Version 25.02.2012
+%
+%	Syntax
+%		rawpath and matpath without pathchar
+%			rawpath is the subdirectory where the .pos files from e.g
+%			cs5calcpos are located (normally named 'rawpos')
+%		matpath must be created by hand, if necessary
+%		posampflag: Optional. Defaults to 0 (false)
+%			If present and true, read posamps from subdirectory posamps
+%			below rawpath, and store in new subdirectory below matpath
+%			(this new posamps subdirectory will be created if necessary)
+%           if > 1 use this number as the number of transmitters (to handle
+%           ag501 data. otherwise default to 6 transmitters (ag500)
+%		rmslim: Optional. Defaults to 30
+%			Not currently clear whether calcpos ever sets output to missing
+%			data. So probably best to catch obviously bad data here
+%			i.e all data exceeding this limit is set to NaN (note: only in
+%			position files, not in posamp files)
+%
+%	Notes
+%		If an appropriate set of amp files is available in mat-format
+%		then one of these can be read to get samplerate, briefcomment?, and
+%		sensornames (from dimension.axis{3})
+%		Or, preferably, if filteramps is used to generate filtered raw amp
+%		files it will also store a small mat file (info.mat) with this
+%		information which can be read by the wrapper script that calls
+%		rawpos2mat
+%       Since ag500 and ag501 potentially use different numbers of sensors
+%       it is important that the sensornames variable is set up
+%       appropriately.
+%
+%
+%	See Also
+%		KALMAN_FB, FILTERAMPS
+%
+%	Updates
+%		8.2010 conversion of posamps included, rms limit included
+%       2.2012 prepare for ag501
+
+functionname='rawpos2mat: Version 25.02.2012';
+
+[descriptor,unit,dimension]=headervariables;
+dimension.axis{3}=sensornames;
+
+nchan=size(sensornames,1);
+
+comment=framecomment(briefcomment,functionname);
+
+ndig=4;
+
+doposamps=0;
+if nargin>6 doposamps=posampflag; end;
+if doposamps
+    posamppathout=[matpath pathchar 'posamps'];
+    mkdir(posamppathout);
+    posamppathin=[rawpath pathchar 'posamps'];
+end;
+
+rmsuse=30;
+if nargin>7
+    rmsuse=rmslim;
+end;
+
+myversion=version;
+myversion=myversion(1);
+
+disp('Converting position data');
+for itrial=triallist
+    disp(itrial);
+    trials=int2str0(itrial,ndig);
+    inname=[rawpath pathchar trials];
+    outname=[matpath pathchar trials];
+    %    data=loadpos(inname);
+    data=loadpos(inname,nchan);    %prepare for ag501
+    if ~isempty(data)
+        nsensor=nchan;
+        for ii=1:nsensor
+            vv=find(data(:,6,ii)>rmsuse);
+            if ~isempty(vv)
+                disp([int2str(length(vv)) ' bad samples in sensor ' int2str(ii)]);
+                data(vv,:,ii)=NaN;
+            end;
+        end;
+        
+        
+        data=single(data);
+        %save as mat file with standard variables
+        if myversion=='6'
+            save(outname,'data','descriptor','dimension','samplerate','comment','unit');
+        else
+            save(outname,'data','descriptor','dimension','samplerate','comment','unit','-v6');
+        end;
+        
+    else
+        disp('No input file?');
+    end;
+    
+end;
+
+if doposamps
+    disp('Converting posamp data');
+    %since usually no ini file in the folder with the posamps need to specify
+    %the data arrangement explicitly for ag500/ag501
+    ntrans=6;
+    if doposamps>1 ntrans=doposamps; end;   %handle ag501
+    [descriptor,unit,dimension]=headervariables(1,sensornames,[ntrans nchan]);
+    
+    for itrial=triallist
+        disp(itrial);
+        trials=int2str0(itrial,ndig);
+        inname=[posamppathin pathchar trials];
+        outname=[posamppathout pathchar trials];
+        data=loadamp(inname,[ntrans nchan]);
+        if ~isempty(data)
+            data=single(data);
+            
+            
+            %save as mat file with standard variables
+            if myversion=='6'
+                save(outname,'data','descriptor','dimension','samplerate','comment','unit');
+            else
+                save(outname,'data','descriptor','dimension','samplerate','comment','unit','-v6');
+            end;
+            
+        else
+            disp('No input file?');
+        end;
+        
+    end;
+end;

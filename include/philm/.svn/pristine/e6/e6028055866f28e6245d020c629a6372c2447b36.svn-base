@@ -1,0 +1,93 @@
+function mt_audio(segspec,chan,audiosf);
+% mt_audio Audio output for mt functions
+% function mt_audio(segspec,chan,audiosf);
+% mt_audio: Version 19.4.98
+%
+% Syntax
+%   chan: Optional, defaults to value of 'audio_channel' from mt_gcsid
+%   segspec: Currently must be 'cut', 'screen', 'cursor'  or 'marker(n)'
+%            Will be upgraded to allow numeric arg specifying time directly
+%	 audiosf: Optional; defaults to true samplerate.
+%
+% Notes
+%   Should be used to handle different audio calls for different versions/machines
+
+    if nargin<2 chan=mt_gcsid('audio_channel'); end;
+    if nargin<3 audiosf=mt_gsigv(chan,'samplerate');end;
+    myver=version;
+    if isstr(segspec)
+  		if strcmp(segspec,'cut') audiotime=[mt_gccud('start') mt_gccud('end')];end;
+		if strcmp(segspec,'screen') audiotime=mt_gdtim;end;
+		if strcmp(segspec,'cursor') audiotime=mt_gcurp;end;
+                if findstr(segspec,'marker')
+                   mymark=[];
+
+                   lm=length('marker');
+                   ls=length(segspec);
+
+                      if ls>lm
+                         tmpchar=segspec((lm+1):ls);
+                         mymark=str2num(tmpchar);      %catch errors???
+                      end;
+
+                   audiotime=mt_gmark('cut',mymark);
+                   if isempty(audiotime) audiotime=zeros(1,2);end;
+                   %If marker boundary not set attempts to use active cursor
+                   if any(isnan(audiotime));
+                      curh=mt_gcurh;
+                      curp=mt_gcurp(curh);
+                      curfree=mt_tcurs(curh,1);
+                      
+                      iactive=getfirst(find(curfree==1));
+                      if isnan(audiotime(1)) audiotime(1)=curp(iactive);end;
+                      if isnan(audiotime(2)) audiotime(2)=curp(iactive);end;
+                   end;
+                   if diff(audiotime)<=0 audiotime=zeros(1,2);end;
+
+                end;  %could be marker
+
+
+
+     else       %isstr(segspec)
+                return;
+     end;
+
+     if audiotime(2)<=audiotime(1)
+        disp('mt_audio: segment has zero length');
+        return;
+     end;
+     
+     
+     [scratch,actualtime]=mt_gdata(chan,audiotime);
+     if isempty(scratch)
+        disp('mt_audio: segment is empty');
+        return;
+     end;
+        
+     if strcmp(myver(1),'4')
+                   saxis('auto');
+                   %add some zero samples, theres a bug somewhere!!
+		   sound ([scratch;zeros(1050,1)],audiosf);
+                else
+                   %version 5 use mysound (safe version of sound if 
+                   %called before sound device currently busy
+                         mycomputer=computer;
+                         if ~strcmp(mycomputer,'LNX86')
+		            mysound(scratch/max(abs(scratch)),audiosf,16);
+                         else
+                             %first version for linux
+                             %could easily be upgraded for more efficient operation
+                             scalit=max(abs(scratch));
+                             scalit=32000./scalit;
+                             scratch=scratch*scalit;
+                             fid=fopen('tmp.raw','w');
+                             if fid>=3
+                                cc=fwrite(fid,scratch,'short');
+                                eval(['!hear_raw rate=' int2str(round(audiosf)) ' tmp.raw&']);
+                             else
+                                 disp('mt_audio: Unable to open temporary audio file');
+                             end;
+                         end;
+                end;
+
+		clear scratch;

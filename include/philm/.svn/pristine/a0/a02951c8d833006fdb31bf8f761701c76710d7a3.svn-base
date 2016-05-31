@@ -1,0 +1,100 @@
+function writeagheader(fid,S)
+% WRITEAGHEADER Write header of AG50x amp and pos files
+% function writeagheader(fid,S)
+% writeagheader: Version 10.09.2012
+%
+%   Syntax
+%       amp or pos file must be opened (and closed) by calling program
+%
+%   Description
+%   Based on readagheader
+%   S is a struct containing fields to be written to the header
+%       NumberOfChannels: default to 16
+%       fields nchan and samplerate are converted to NumberOfChannels and
+%       SampleFrequency respectively
+%   Special fields:
+%       vernum: default to '002'
+%
+%   Burkhard's description of preliminary version
+%die ersten 11 Zeichen sind 'AG50xDATA_V'. Dann eine 3-stelligen zahl,
+%welche die format-version angibt, gefolgt von einem LineFeed (chr(10)).
+%Dies stellt die Signatur dar und wird sich (bis auf die 3-Stellige Zahl)
+%nicht ändern, es sei denn, Du hast noch Vorschläge/Wünsche. z.B: noch
+%ein chr(0) nach dem LineFeed, damit das als null-terminierter string
+%gelesen werden kann.
+
+%Es folgt eine 8-stellige zahl, welche die gesamtgröße des headers
+%inklusive der signatur in byte angibt, also den Offset zu den
+%binärdaten ausgehend vom Dateianfang. diese zahl wird ebenfalls von
+%einem LineFeed abgeschlossen. sie sollte mit führenden "0" aufgefüllt
+%sein und immer 8 stellen lang sein.
+
+%Danach kommen die header-daten, z.Zt. im INI-file format, aber damit bin
+%ich noch nicht glücklich. Es wird text bleiben, aber evtl. lieber XML
+%oder JSON notation, damit man die daten strukturierter ablegen kann.
+
+%Im moment ist nur der eintrag "NumberOfChannels" wichtig, um die
+%nachfolgenden binärdaten einlesen zu können.
+
+%der header wird z.Zt. abgeschlossen durch LineFeed+chr(0)+chr(26)
+%( in hex: $0A $00 $1A )
+
+%myfile='0001.pos';
+%fid=fopen(myfile);
+
+functionname='writeagheader: Version 11.09.2012';
+
+
+headerid=agheaderid;
+nchan=16;
+samplerate=200;
+vernum='002';
+verlen=length(vernum);
+offsetlen=8;
+offsetplaceholder='<offset>';   %check it is the right length
+nh=length(headerid);
+
+if isfield(S,'vernum')
+    if length(vernum)==verlen
+        vernum=S.vernum;
+        S=rmfield(S,vernum);
+    end;
+end;
+
+if isfield(S,'nchan')
+    S.NumberOfChannels=S.nchan;
+    S=rmfield(S,'nchan');
+end;
+if isfield(S,'samplerate')
+    S.SampleFrequency=S.samplerate;
+    S=rmfield(S,'samplerate');
+end;
+if ~isfield(S,'NumberOfChannels')
+    S.NumberofChannels=nchan;
+end;
+if ~isfield(S,'SampleFrequency')
+    S.SampleFrequency=samplerate;
+end;
+
+headerstr=[headerid vernum char(10) offsetplaceholder char(10)];
+
+myfields=fieldnames(S);
+nfield=length(myfields);
+for ifi=1:nfield
+    
+    fieldn=myfields{ifi};
+    fieldv=S.(fieldn);
+    if isnumeric(fieldv)
+%default settings of num2str may not always be appropriate
+        fieldv=num2str(fieldv);
+    end;
+    
+    headerstr=[headerstr fieldn '=' fieldv char(10)];
+end;
+headerstr=[headerstr char(10) char(0) char(26)];
+
+mylen=length(headerstr);
+mylen=int2str0(mylen,offsetlen);
+headerstr=strrep(headerstr,offsetplaceholder,mylen);
+
+fwrite(fid,headerstr,'uchar');

@@ -1,0 +1,94 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.ema;
+
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+
+/**
+ *
+ * @author lasse
+ */
+public class Recmon {
+
+    int cnt = 0;
+    int dummy = 0;
+    float[][] dataS = new float[12][6];
+    float[][] dataC = new float[12][6];
+    int[] extra = new int[10];
+    float[][] pos = new float[12][7];
+    boolean active = false;
+
+
+    public int read(InputStream inp) throws IOException {
+        int position = 0;
+        ByteBuffer bb = ByteBuffer.allocate(960);
+        byte[] bytes = new byte[960];
+        inp.read(bytes);
+        long result = inp.skip(inp.available());
+        bb.put(bytes);
+        bb.order(ByteOrder.LITTLE_ENDIAN);
+        cnt = bb.getInt(position);
+        active = (cnt & 0x80000000) != 0;
+        cnt = cnt & 0x7fffffff;
+        position += 4;
+        dummy = bb.getInt(4);
+        position += 4;
+        for (int m = 0; m < 12; m++) {
+            for (int n = 0; n < 6; n++) {
+                dataS[m][n] = bb.getFloat(position);
+                position += 4;
+            }
+        }
+        for (int m = 0; m < 12; m++) {
+            for (int n = 0; n < 6; n++) {
+                dataC[m][n] = bb.getFloat(position);
+                position += 4;
+            }
+        }
+        for (int m = 0; m < 10; m++) {
+            extra[m] = bb.getInt(position);
+            position += 4;
+        }
+        for (int m = 0; m < 12; m++) {
+            for (int n = 0; n < 7; n++) {
+                pos[m][n] = bb.getFloat(position);
+                position += 4;
+            }
+        }
+        return (int)result;
+    }
+    
+    public int getSample () {
+        return this.cnt;
+    }
+    
+    public int getSweep () {
+        return this.dummy;
+    }
+    
+    public float[][] getDataS () {
+        return this.dataS;
+    }
+
+    public float[][] getDataC () {
+        return this.dataC;
+    }
+
+    public float[][] getPos () {
+        return this.pos;
+    }
+    
+    public int[] getExtra () {
+        return this.extra;
+    }
+    
+    public boolean getActive () {
+        return this.active;
+    }
+}

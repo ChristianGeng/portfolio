@@ -1,0 +1,38 @@
+function saveamp3(AmpFileName,Data);
+% saveamp3 Save amps in raw binary file
+% function saveamp3(AmpFileName,Data)
+% saveamp3: Version 25.02.2012
+%
+%   Syntax
+%       Data must be 3D array arranged samples, transmitters, sensors
+%       specify amp filename with extension (.amp)
+%
+%   Notes
+%       This function replaces saveamp.
+%       In order to handle ag500 and ag501 data it is necessary to assume
+%       the input data is arranged appropriately.
+
+if (nargin ~= 2),
+    help('SaveAmp');
+    error('Syntaxerror: Wrong number of arguments.');
+end
+
+Ndim=size(Data,2);     %n transmitters
+Nchan=size(Data,3);
+Ncol=Nchan*Ndim;
+
+%convert to 2D
+    Data=reshape(Data,[size(Data,1) size(Data,2)*size(Data,3)]);
+
+
+[fid, msg] = fopen(AmpFileName, 'w');	% open data file
+if fid == -1,
+   error([msg ' Filename: ' AmpFileName]);
+   return;
+end
+
+%note transpose, as written in column order
+mycount = fwrite(fid, Data', 'single');	
+
+fclose(fid);
+

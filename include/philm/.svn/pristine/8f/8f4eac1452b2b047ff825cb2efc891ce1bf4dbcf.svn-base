@@ -1,0 +1,44 @@
+function prompter_playwav(mymode,mystim)
+% function prompter_playwav(mymode,mystim)
+% wav output in prompt programs
+%   mymode: 'start', 'end', 'list'
+%   mystim: Only relevant in list mode. Stimulus number. If not present,
+%   retrieved from main data structure
+
+
+try
+    if strcmp(mymode,'list')
+        
+        if nargin<2
+            P=prompter_gmaind;
+            mystim=P.istim;
+        end;
+        S=prompter_gstimd;
+        wavlist=S.wavlist;
+        tmpname=deblank(wavlist(mystim,:));
+        [wavd,sf,mybits]=wavread(tmpname);
+        asyncflag=S.wavlist_async;
+        
+        
+    else
+        
+        A=prompter_gwaved;
+        %check required fields exist?
+        wavd=A.(['wav' mymode '_d']);
+        sf=A.(['wav' mymode '_sf']);
+        mybits=A.(['wav' mymode '_bits']);
+        asyncflag=A.(['wav' mymode '_async']);
+        
+    end;
+    
+    sound(wavd,sf,mybits);
+    if ~asyncflag
+        tmppause=length(wavd)/sf;
+        pause(tmppause);
+    end;
+    
+catch
+    disp(['prompter_playwav: problem playing audio in mode ' mymode]);
+    disp(lasterr);
+    keyboard;
+end;

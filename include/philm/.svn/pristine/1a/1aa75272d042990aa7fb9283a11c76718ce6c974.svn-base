@@ -1,0 +1,100 @@
+function prompter_paralleloutctl(mycmd,arg2)
+% function prompter_paralleloutctl(mycmd,parportin)
+%
+%   Syntax
+%       When command is 'ini' arg2 should be parport object obtained with
+%           prompter_getparport
+%       When command is 'trial' (vtg55 only), arg2 should be the trial number
+%       Other commands, 'start', 'stop', 'reset' (vtg55 only)
+%
+%   Notes
+%       Settings cannot be changed without re-initializing
+%           i.e. even if they are changed in the main prompter data structure
+%           paralleloutmode synchline vtgtrialflag vtgtrialfix
+%           these settings remain fixed until the next call with command
+%           'ini'
+
+persistent parport paralleloutmode synchline vtgtrialflag vtgtrialfix
+
+
+if strcmp(mycmd,'start')
+    if strcmp(paralleloutmode,'simple')
+        putvalue(parport.Line(synchline),1);
+        
+        return;    
+    end;
+    if strcmp(paralleloutmode,'vtg55')
+        vtgctrl('start');
+        
+        return;    
+    end;
+    
+end;
+
+if strcmp(mycmd,'stop')
+    if strcmp(paralleloutmode,'simple')
+        putvalue(parport.Line(synchline),0);
+        
+        return;    
+    end;
+    if strcmp(paralleloutmode,'vtg55')
+        vtgctrl('stop');
+        
+        return;    
+    end;
+    
+end;
+
+
+
+if strcmp(mycmd,'ini')
+    
+    P=prompter_gmaind;
+    if ~P.daqok
+        paralleloutmode=''; %prevent any further attempt to access port
+    else    
+        paralleloutmode=P.paralleloutmode;
+        parport=arg2;
+        if strcmp(paralleloutmode,'simple')
+            synchline=P.synchline;        %compatible with vtgctrl (otherwise use 1)
+            
+            lines_OUT_1 = addline(parport,[0:7],0,'out');
+            
+            putvalue(parport.Line(synchline),0);
+            
+        end;
+        
+        if strcmp(paralleloutmode,'vtg55')
+            vtgtrialflag=P.vtgtrialflag;
+            vtgtrialfix=P.vtgtrialfix;
+            
+            vtgctrl('ini',parport);
+        end;
+        
+    end;        %daqok
+end;               %ini
+
+
+if strcmp(mycmd,'trial')
+    if strcmp(paralleloutmode,'vtg55')
+        if vtgtrialflag
+            
+            vtgtrialnum=arg2;
+            if vtgtrialfix vtgtrialnum=1; end;
+            
+            vtgctrl('trial',vtgtrialnum); 
+        end;
+    end;
+end;
+
+
+
+if strcmp(mycmd,'reset')
+    if strcmp(paralleloutmode,'vtg55')
+            
+            vtgctrl('reset'); 
+        end;
+end;
+
+
+

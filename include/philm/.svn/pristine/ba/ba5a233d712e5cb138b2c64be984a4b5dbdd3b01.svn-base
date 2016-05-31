@@ -1,0 +1,16 @@
+function parport=prompter_getparport;
+% function parport=prompter_getparport;
+
+P=prompter_gmaind;
+daqok=1;
+try
+	parport = digitalio('parallel','LPT1');
+catch
+	daqok=0;
+    parport=[];
+    disp('Parallel port not available');
+	disp('Check you have administrator privileges');
+end;
+
+P.daqok=daqok;
+prompter_smaind(P);
