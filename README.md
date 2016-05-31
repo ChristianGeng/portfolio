@@ -1,5 +1,6 @@
 # Christian Geng
 
+
 ## Hyperparameter Optimization
 
 The adjustment of the many parameters of an algorithm in machine learning is a hard problem. Besides brute force methods, more elegant solutions have gained popularity that fuel hopes to find optimal hyperparameters quicker. My interest in these approaches has been stimulated by end-to-end systems like [Deep Feature synthesis](https://groups.csail.mit.edu/EVO-DesignOpt/groupWebSite/uploads/Site/DSAA_DSM_2015.pdf) 
@@ -35,7 +36,7 @@ two point clouds that need to be aligned, after finding centerings in a preproce
 ## Real Time Display for two motion trackers in parallel
 
 For monitoring data quality during experimental conduct exists this dual EMA RT monitor. 
-It queries the devices TCP Real Time Stream of Online calculated positions, and visualizes these positions on the computer screen. This gives you evidence whether motion tracking works right. The code is a mess, but might be useful for those who wish to study Matlab callbacks. Find it [here]().
+It queries the devices TCP Real Time Stream of Online calculated positions, and visualizes these positions on the computer screen. This gives you evidence whether motion tracking works right. The code is a mess, but might be useful for those who wish to study Matlab callbacks. Find it [here](include/cgm/3DUoE/lida_rtmon_dual.m).
 
 
 ## Preprocessing pipeline potsdam
