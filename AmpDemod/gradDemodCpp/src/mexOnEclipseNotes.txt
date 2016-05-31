@@ -1,0 +1,86 @@
+/*
+ * DWORDtoIP4.c
+ *
+ *  Created on: 12.08.2011
+ *
+ *
+ *
+ * Wednesday, 02 July 2008 */
+
+
+
+Einstellen der CDT-Umgebung:
+
++ right click on your project->C/C++ Build folder, click on the Settings sub-folder.
+	- Here, firstly, we have to ensure that we're doing setup for all configurations.
+	-  To select what type of output we want, go to the Build Artifact tab:
+		Here do:
+			(a) artifact type should be 'Shared Library',
+			(b) name defaults to your project name : ${ProjName}
+			(c) artifact extension should be modified : "mexw32" | mexglx | mexa64
+			(d) I normally set the prefix to blank instead of lib
+	- 'Tool Settings'  -> GCC Compiler:
+		if C++: under 'Preprocessor', add MATLAB_MEX_FILE
+		if C, under Symbold add MATLAB_MEX_FILE
+		Includes select 'Directories', and add              	C:/MATLAB/R2007b/extern/include
+	- 'Tool Setting': gcc -fPIC
+
+	/usr/local/MATLAB/R2010b/extern/include/
+	- 'Tool Settings'  -> GCC  Linker:
+		libraries (-l): mex', 'mat', and 'mx
+		Library search path (-L) :
+				/usr/local/lib/MatlabRXX/bin oder /usr/local/lib/MatlabRXX/bin/glnxa66?
+
+
+	- Create the file gradDemod.def containing
+		LIBRARY gradDemod.mexa64
+		EXPORTS mexFunction
+
+
+/* GDB HÄNDISCH */
+
+A) händisch mit shell
+	+ matlab -Dgdb
+	+ run -nojvm
+	Matlab Console:
+	+ dbmex on
+	Letzte paar Zeilen listen: (gdb) list -
+break mexFunctio
+quit oder CTRL-d zum Verlassen
+Welche breakpoints habe ich:
+info breakpoints
+info
+help
+
+/* BOOST UND MEX */
+
+http://pmtk3.googlecode.com/svn-history/r2177/wiki/compilingLibdai.wiki
+
+
+/* BOOST UND ECLIPSE */
+http://stackoverflow.com/questions/2519727/linking-boost-to-my-c-project-in-eclipse
+
+
+
+
+
+g++ -fPIC -DMATLAB_MEX_FILE 
+-I/usr/local/MATLAB/R2010b/extern/include 
+-I/usr/include/eigen3 -O0 -g3 -Wall -c -fmessage-length=0
+-L/usr/local/MATLAB/R2010b/bin/glnxa64
+-lmex -lmx -lmat (-lm)
+
+
+
+
+
+
+References:
+
+[1] Matlab using gdb, mathworks demo:
+http://www.mathworks.de/help/techdoc/matlab_external/f32489.html
+
+[2] Ausführliche Anleitung zur eclipse-CDT Konfiguration:
+http://ngoonee.xanga.com/664222870/compiling-mexw32-mex-for-windows-files-using-eclipse-cdt-ide-mingw-gcc-compiler/
+Dieses ist auch als  "CompilingMexUsingEclipseCDTIDE.html" in Ressourcen Matlab mex gespeichert.
+
