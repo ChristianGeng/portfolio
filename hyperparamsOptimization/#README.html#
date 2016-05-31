@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<title>README.html</title>
+
+</head>
+
+<body>
+
+<h1>Hyperparameter Tuning</h1>
+
+<p>The creation, engineering and preprocessing of  statistical features, the selection of the suitable ones and finally the parametrization of the algorithm are
+the main domains, where a user typically adjusts a machine learning system in order to make it succesful. <br />
+It therefore makes sense to search for optimal values automatically. This is often referred to as "hyperparameter tuning". </p>
+
+<p>The standard approaches that have been around for a long time are a brute force approach doing grid search over the parameter space.
+This has been reported to be inferior to a random search strategy in the paper by Bergstra et al.. 
+Often approaches are based on Bayesian Optimization in order to arrive at good parameter setting more quickly.
+Kanter et. al seem to an exception and use Gaussian Copula Process (GCP) instead.</p>
+
+<p>There exist various packages for this optimization.</p>
+
+<p>teste</p>
+
+<p>"Gaussian process Bayesian optimization, optimizing the hyperparameters of a squared-exponential covariance, and proposed the Tree Parzen Algorithm." [Snoeak et. al.]</p>
+
+<ul>
+<li>Most packages seem to use Bayesian Optimization / Gaussian Processes approach to model the relationship f between parameter choices and the performance of the whole system
+Most use  (who)</li>
+<li>Kanter et. al seem to an exception and use Gaussian Copula Process (GCP) instead.</li>
+</ul>
+
+<p>These are the notable packages that we know of</p>
+
+<p>The performance of machine learning systems depends on its parameter settings. Therefore it is , especially if there’s more than one or two hyperparameters</p>
+
+<p>(b) autotune a machine learning pathway to extract the most value out of the synthesized features</p>
+
+<h1>References</h1>
+
+<p>Kanter, Max; Veeramachaneni, Kalyan. "Deep Feature Synthesis: Towards Automating Data Science Endeavors"</p>
+
+</body>
+</html>
