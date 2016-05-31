@@ -35,12 +35,12 @@ two point clouds that need to be aligned, after finding centerings in a preproce
 ## Real Time Display for two motion trackers in parallel
 
 For monitoring data quality during experimental conduct exists this dual EMA RT monitor. 
-It queries the devices TCP Real Time Stream of Online calculated positions, and visualizes these positions on the computer screen. This gives you evidence whether motion tracking works right. The code is a mess, but 
+It queries the devices TCP Real Time Stream of Online calculated positions, and visualizes these positions on the computer screen. This gives you evidence whether motion tracking works right. The code is a mess, but might be useful for those who wish to study Matlab callbacks. Find it [here]().
 
 
 ## Preprocessing pipeline potsdam
 
-When working in research, I have developped functions that allow to condition motion tracker data such that normally gifted people should easily be able to carry out their own EMA research including the notoriously hated postprocessing. [This](include/cgm/NDIWAVES/index.html) is a pointer to the doxygen-style documentation of the top level scripts.
+When I was still working in research, I have developped functions that allow to condition motion tracker data such that normally gifted people should easily be able to carry out their own EMA research including the notoriously hated postprocessing. [This](include/cgm/NDIWAVES/index.html) is a pointer to the doxygen-style documentation of the templates exposed to end users.
 
 
 

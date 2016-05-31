@@ -1,0 +1,719 @@
+function lida_rtmon_dual(recpath,displaychans,timerspec)
+% LIDA_RTMON RT AG500 display; copy trials from lida to control server
+% function lida_rtmon(recpath,displaychans,timerspec)
+% lida_rtmon: Version 19.03.09
+%
+%   Syntax
+%       recpath: optional. If present, copy data from lida to control
+%			server after completion of each trial. The program then
+%			computes statistics on the rms signal amplitude of each sensor
+%			similar to the pegelstats output argument of filteramps.
+%			The recpath argument should only be used when the program is
+%			running on the control server. The display function can be used
+%			on any machine on the network.
+%       displaychans: optional. Default to 1:12
+%		timerspec: optional. Default to 1/20. Update interval for graphics
+%
+%	Description
+%       Graphic properties can be adjusted interactively using context menu
+%			set up by setcontextmenu (right click on object; object tag is
+%			displayed; left click on this to open the property inspector for this
+%			object) but in practice adjustments will probabably be better done from the
+%			keyboard prompt (e.g set up some scripts with useful settings).
+%		Statistics of the current contents of the ring buffer of sensor
+%			positions can be accessed from the keyboard with 'showbuffer'
+%		Some settings can be accessed through the userdata of the figure
+%			(e.g length of orientation vector (in mm))
+%		The following line should be placed in startup.m (replacing
+%			topleveldir as appropriate)
+%			javaaddpath([topleveldir
+%			'phil/3dnew/lida/java/recmon/dist/recmon.jar']);
+%		cs5recorder must be running before this program is started
+%
+%	Updates
+%		3.09 include timerspec input argument
+%
+%   See Also SETCONTEXTMENU for interactive graphic settings, FILTERAMPS
+%		and PLOTPEGELSTATS for background to amplitude statistics
+
+%things to do
+% dummy axes for legend
+% axes for time display of chosen signal
+% no-graphics mode, i.e just copy amp files and compute amp statistics
+
+colordef none
+
+% Notes: 
+% TAG: all_positionsCS6
+
+global DOLIDACOPY
+DOLIDACOPY=1;
+if ~DOLIDACOPY
+    disp('WARNING: Someone disabled transfer of ampfile, see line 41.')
+end
+
+nax=6;
+axpos=axmult(2+nax, 2, 4, 0.05, 0.1, 0.02, 0.02);
+
+nsensor=12;
+ndim=6;
+ndig=4;
+ampfac=1000;
+
+lidatimeout=200;	%possibly higher value sometimes useful to prevent apparent lost connection?
+
+%Buffer for position data while trial is being recorded
+%Did I try using global variables?
+
+BSIZECS6=200;      %store up to 10s at 20/s
+BDCS6=ones(nsensor,7,BSIZECS6)*NaN;
+BTCS6=ones(BSIZECS6,1)*NaN;
+BPOINTCS6=1;
+
+BSIZECS5=200;      %store up to 10s at 20/s
+BDCS5=ones(nsensor,7,BSIZECS5)*NaN;
+BTCS5=ones(BSIZECS5,1)*NaN;
+BPOINTCS5=1;
+
+
+amppath='';
+if nargin
+
+    mypath=recpath;
+    if ~isempty(recpath)
+        mkdir(['/srv/ftp/data/' mypath '/amps']);
+        system(['chmod -R g+w /srv/ftp/data/' mypath]);
+        amppath=['/srv/ftp/data/' mypath '/amps/'];
+    end;
+
+end;
+
+chanlistCS6=[];
+chanlistCS6=[];
+
+if nargin>1 chanlistCS6=displaychans; end;
+if isempty(chanlistCS6) chanlistCS6=1:12; end;
+% see TO DO:
+chanlistCS5=chanlistCS6;
+
+
+%needed for tcip socket
+import java.io.*;
+import java.net.*;
+% this should be placed in startup.m
+
+try
+    [sCS6,siCS6,soCS6]=lida_connect_CS6(lidatimeout);
+catch
+    error('CS6: Failed to connect. Is "cs5recorder" running?');
+end
+
+
+try
+    [sCS5,siCS5,soCS5]=lida_connect_CS5(lidatimeout);
+catch
+    error('CS5: Failed to connect. Is "cs5recorder" running?');
+end
+
+
+
+timerperiod=1/20;
+if nargin>2 timerperiod=timerspec; end;
+
+%length of orientation vectors in mm
+orilength=10;
+
+deg2rad=pi/180;
+
+%trajview=[90 0;0 0;90 -90;-37.5 30];
+%view settings for the 3 trajectory axes
+trajview=[90 0;0 0;90 -90];
+
+% hf=figure;
+hf=figure('Position', [2 139 1657 982]);
+
+htimer=timer('startdelay',0,'executionmode','fixedrate','period',timerperiod,'timerfcn',{@lida_rtmon_timercb,hf});
+
+%first call seems to return all zeros, so do twice
+try
+    [activeCS6,sampleCS6,sweepCS6,dataSCS6,dataCCS6,posCS6] = getEmaAll (sCS6);
+    [activeCS6,sampleCS6,sweepCS6,dataSCS6,dataCCS6,posCS6] = getEmaAll (sCS6);
+catch
+    error(['CS6: An error occured when trying to read from the socket.' crlf lasterr]);
+end
+
+try
+    [activeCS5,sampleCS5,sweepCS5,dataSCS5,dataCCS5,posCS5] = getEmaAll (sCS5);
+    [activeCS5,sampleCS5,sweepCS5,dataSCS5,dataCCS5,posCS5] = getEmaAll (sCS5);
+catch
+    error(['CS5: An error occured when trying to read from the socket.' crlf lasterr]);
+end
+
+pegelCS6=eucdistn(dataSCS6,zeros(size(dataSCS6)));
+posCS6(:,7)=pegelCS6*ampfac;
+
+pegelCS5=eucdistn(dataSCS5,zeros(size(dataSCS5)));
+posCS5(:,7)=pegelCS5*ampfac;
+
+
+% LIDASPECIFIC: CS6
+userdata.socketCS6=sCS6;
+userdata.activeCS6=activeCS6;
+userdata.sampleCS6=sampleCS6;
+userdata.sweepCS6=sweepCS6;
+userdata.dataSCS6=dataSCS6;
+userdata.dataCCS6=dataCCS6;
+userdata.posCS6=posCS6;
+% will be specific but not at the moment!!
+userdata.chanlistCS6=chanlistCS6;
+userdata.BSIZECS6=BSIZECS6;
+userdata.BPOINTCS6=BPOINTCS6;
+userdata.BDCS6=BDCS6;
+userdata.BTCS6=BTCS6;
+
+% LIDASPECIFIC: CS5
+userdata.socketCS5=sCS5;
+userdata.activeCS5=activeCS5;
+userdata.sampleCS5=sampleCS5;
+userdata.sweepCS5=sweepCS5;
+userdata.dataSCS5=dataSCS5;
+userdata.dataCCS5=dataCCS5;
+userdata.posCS5=posCS5;
+% will be specific but not at the moment!!
+userdata.chanlistCS5=chanlistCS5; % see above!
+userdata.BSIZECS5=BSIZECS5;
+userdata.BPOINTCS5=BPOINTCS5;
+userdata.BDCS5=BDCS5;
+userdata.BTCS5=BTCS5;
+
+
+% amppath: See whether viable to make lidaspecific!
+userdata.amppath=amppath;
+% variables not specific for CS5/6
+userdata.lidatimeout=lidatimeout;
+userdata.orilength=10;          %length of orientation vector in mm
+userdata.timerperiod=timerperiod;
+userdata.timerhandle=htimer;
+
+
+mycols=hsv(nsensor+1);
+mymarker={'+','o','*','x','square','diamond','v','^','>','<','pentagram','hexagram'};
+
+% nax=3;
+sprow=2;
+spcol=2;
+nchanCS6=length(chanlistCS6);
+nchanCS5=length(chanlistCS5);
+
+%tmpdig=length(int2str(max(chanlistCS6));
+chanstrCS6=int2str(chanlistCS6');
+chanstrCS5=int2str(chanlistCS5');
+
+
+hlCS6=ones(nchanCS6,nax/2);     %current positions and orientation`
+hlCS5=ones(nchanCS5,nax/2);     %current positions and orientation`
+
+hltrajCS6=ones(nchanCS6,nax/2); %position traces during trial recording
+hltrajCS5=ones(nchanCS5,nax/2); 
+
+
+hlallCS6=ones(1,nax/2);
+oridataCS6=ones(nsensor,3);
+[oridataCS6(:,1),oridataCS6(:,2),oridataCS6(:,3)]=sph2cart(posCS6(:,4)*deg2rad,posCS6(:,5)*deg2rad,orilength);
+
+hlallCS5=ones(1,nax/2);
+oridataCS5=ones(nsensor,3);
+[oridataCS5(:,1),oridataCS5(:,2),oridataCS5(:,3)]=sph2cart(posCS5(:,4)*deg2rad,posCS5(:,5)*deg2rad,orilength);
+
+
+
+
+%all axes are actually 3D plots that are identical except for the view setting
+%this makes updating very simple. However, zooming might be easier with 3
+%different 2D plots
+
+% cicle ini: 
+mm=[0:0.01:2*pi]';
+sprad=150;
+spfac=1.5; % involved in setting axes limits: they are set to +- spfac * radius of magic spheres  
+tmpcrc(:,:,1)=[zeros(size(mm,1),1) sin(mm)*sprad cos(mm)*sprad];
+tmpcrc(:,:,2)=[sin(mm)*sprad zeros(size(mm,1),1) cos(mm)*sprad];
+tmpcrc(:,:,3)=[ sin(mm)*sprad  cos(mm)*sprad zeros(size(mm,1),1)];
+
+% CS6 code goes here:
+
+for ii=1:nax/2
+%     hax(ii)=subplot(sprow,spcol,ii);
+    hax(ii)=axes('Position', axpos(ii,:));
+    xlabel('X (mm)');
+    ylabel('Y (mm)');
+    zlabel('Z (mm)');
+    set(gca,'tag',['view' int2str(ii)]);
+    set(gca,'view',trajview(ii,:));
+    axis square;
+    hold on;
+    mcrc2(ii)=plot3(tmpcrc(:,1,ii),tmpcrc(:,2,ii),tmpcrc(:,3,ii));
+     hold on;
+    for jj=1:nchanCS6
+        ichan=chanlistCS6(jj);
+        tmpco=ones(2,3)*NaN;
+        tmpco(1,:)=posCS6(ichan,1:3);
+        tmpco(2,:)=posCS6(ichan,1:3)+oridataCS6(ichan,:);
+        hlCS6(jj,ii)=line('xdata',tmpco(:,1),'ydata',tmpco(:,2),'zdata',tmpco(:,3),'color',mycols(ichan,:),'marker',mymarker{ichan},'linewidth',2,'tag',['S' int2str(ichan) '_posCS6ori'],'clipping','off');
+        bb=squeeze(BDCS6(ichan,1:3,:));
+        bb=bb';
+        hltrajCS6(jj,ii)=line('xdata',bb(:,1),'ydata',bb(:,2),'zdata',bb(:,3),'color',mycols(ichan,:),'linewidth',1,'tag',['S' int2str(ichan) '_trajectory'],'clipping','off');
+    end;
+    hlallCS6(ii)=line('xdata',posCS6(chanlistCS6,1),'ydata',posCS6(chanlistCS6,2),'zdata',posCS6(chanlistCS6,3),'color','k','marker','o','linewidth',2,'linestyle','none','tag','all_positionsCS6','clipping','off');
+    if ii==1
+        % Legend disabled for the moment! CG
+        %hleg=legend(hl(:,1),chanstrCS6);
+        %set(hleg,'tag','legend','Location','BestOutside');
+    end;
+end;
+
+
+% hax(nax+1)=subplot(sprow,spcol,nax+1); ORI
+hax((nax/2)+1)=axes('Position', axpos(nax/2+1,:));
+htCS6=text(0,0,[chanstrCS6 blanks(nchanCS6)' int2str(round(posCS6(chanlistCS6,:)))],'fontsize',8,'fontname','Courier','fontweight','bold');
+xtmp=get(htCS6,'extent');
+set(gca,'xlim',[xtmp(1) xtmp(1)+xtmp(3)],'ylim',[xtmp(2) xtmp(2)+xtmp(4)]);
+set(htCS6,'clipping','off','tag','list_display');
+htitCS6=title(['x, y, z, phi, theta, rms(resid), rms(amp)*' int2str(ampfac)]);
+set(gca,'visible','off');
+set(htitCS6,'visible','on','tag','list_title');
+
+userdata.hlCS6=hlCS6;
+userdata.hlallCS6=hlallCS6;
+userdata.htCS6=htCS6;
+userdata.hltrajCS6=hltrajCS6;
+
+
+
+% CS5 code goes here:
+
+for ii=5 : 7 %nax -1
+%     hax(ii)=subplot(sprow,spcol,ii);
+    hax(ii)=axes('Position', axpos(ii,:));
+    xlabel('X (mm)');
+    ylabel('Y (mm)');
+    zlabel('Z (mm)');
+    set(gca,'tag',['view' int2str(ii-4)]);
+    set(gca,'view',trajview(ii-4,:));
+    axis square;
+    hold on;
+    mcrc2(ii)=plot3(tmpcrc(:,1,ii-4),tmpcrc(:,2,ii-4),tmpcrc(:,3,ii-4));
+     hold on;
+    for jj=1:nchanCS5
+        ichan=chanlistCS5(jj);
+        tmpco=ones(2,3)*NaN;
+        tmpco(1,:)=posCS5(ichan,1:3);
+        tmpco(2,:)=posCS5(ichan,1:3)+oridataCS5(ichan,:);
+        hlCS5(jj,ii-4)=line('xdata',tmpco(:,1),'ydata',tmpco(:,2),'zdata',tmpco(:,3),'color',mycols(ichan,:),'marker',mymarker{ichan},'linewidth',2,'tag',['S' int2str(ichan) '_posCS5ori'],'clipping','off');
+        bb=squeeze(BDCS6(ichan,1:3,:));
+        bb=bb';
+        hltrajCS5(jj,ii-4)=line('xdata',bb(:,1),'ydata',bb(:,2),'zdata',bb(:,3),'color',mycols(ichan,:),'linewidth',1,'tag',['S' int2str(ichan) '_trajectory'],'clipping','off');
+    end;
+    hlallCS5(ii-4)=line('xdata',posCS5(chanlistCS5,1),'ydata',posCS5(chanlistCS5,2),'zdata',posCS5(chanlistCS5,3),'color','k','marker','o','linewidth',2,'linestyle','none','tag','all_positionsCS5','clipping','off');
+    if ii==5
+        % Legend disabled for the moment! CG
+        %hleg=legend(hl(:,1),chanstrCS5);
+        %set(hleg,'tag','legend','Location','BestOutside');
+    end;
+end;
+
+% hax(nax+1)=subplot(sprow,spcol,nax+1); ORI
+hax(nax+2)=axes('Position', axpos(nax+2,:));
+htCS5=text(0,0,[chanstrCS5 blanks(nchanCS5)' int2str(round(posCS5(chanlistCS5,:)))],'fontsize',8,'fontname','Courier','fontweight','bold');
+xtmp=get(htCS5,'extent');
+set(gca,'xlim',[xtmp(1) xtmp(1)+xtmp(3)],'ylim',[xtmp(2) xtmp(2)+xtmp(4)]);
+set(htCS5,'clipping','off','tag','list_display');
+htitCS5=title(['x, y, z, phi, theta, rms(resid), rms(amp)*' int2str(ampfac)]);
+set(gca,'visible','off');
+set(htitCS5,'visible','on','tag','list_title');
+
+userdata.hlCS5=hlCS5;
+userdata.hlallCS5=hlallCS5;
+userdata.htCS5=htCS5;
+userdata.hltrajCS5=hltrajCS5;
+
+
+set(hf,'doublebuffer','on','tag','lida_rtmon');
+
+% original:
+%set(hax(1:nax),'xlim',[-100 100],'ylim',[-100 100],'zlim',[-100 100]);
+% set(hax(setxor(1:nax,[4 8])),'xlim', spfac.*[-sprad sprad],'ylim',  spfac.*[-sprad sprad],'zlim',  spfac.*[-sprad sprad]);
+set(hax(1:nax/2),'xlim', spfac.*[-sprad sprad],'ylim',  spfac.*[-sprad sprad],'zlim',  spfac.*[-sprad sprad]);
+set(hax(5:7),'xlim', spfac.*[-sprad sprad],'ylim',  spfac.*[-sprad sprad],'zlim',  spfac.*[-sprad sprad]);
+set(hf,'userdata',userdata);
+%  set(gca, 'xlim', [-sprad sprad],'ylim', [-sprad sprad],'zlim', [-sprad sprad])
+
+
+setcontextmenu(findobj(hf),hf);
+disp('Use context menus to adjust graphics properties');
+disp('Position of axes can be adjusted with the pan tool in the figure menu bar');
+disp('Type return to start timer');
+keyboard;
+start(htimer);
+disp('Type return to stop');
+keyboard;
+
+stop(htimer);
+delete(htimer);
+
+sCS6.close;
+sCS5.close;
+
+
+
+function lida_rtmon_timercb(cbobj,cbdata,hf)
+
+deg2rad=pi/180;
+ndig=4;
+ndim=6;
+ampfac=1000;
+
+userdata=get(hf,'userdata');
+
+chanlistCS6=userdata.chanlistCS6;
+nchanCS6=length(chanlistCS6);
+hlallCS6=userdata.hlallCS6;
+hlCS6=userdata.hlCS6;
+htCS6=userdata.htCS6;
+
+chanlistCS5=userdata.chanlistCS5;
+nchanCS5=length(chanlistCS5);
+hlallCS5=userdata.hlallCS5;
+hlCS5=userdata.hlCS5;
+htCS5=userdata.htCS5;
+
+
+% [userdata, connected, activeCS6,sampleCS6,sweepCS6,dataSCS6,dataCCS6,posCS6]=tryconnect('CS6',userdata)
+
+
+%========= CS6 code =============
+skipnew=1;
+
+if ~skipnew
+    readok=0;
+    while ~readok
+        try
+             [activeCS6,sampleCS6,sweepCS6,dataSCS6,dataCCS6,posCS6] = getEmaAll (userdata.socketCS6);
+            readok=1;
+        catch
+            disp('Reconnecting ...');
+            %		disp(['I think I lost the connection...' crlf 'Type return when ready to reconnect!']);
+
+            retrycount=0;
+            connected=0;
+            retrylimit=10;
+            while ~connected
+                try
+                    userdata.socketCS6.close; %close the socket in any case, maybe timeout
+                    %was for different reasons than a broken
+                    %socket
+                    userdata.socketCS6=lida_connect_CS6(userdata.lidatimeout);
+                     [activeCS6,sampleCS6,sweepCS6,dataSCS6,dataCCS6,posCS6] = getEmaAll (userdata.socketCS6);
+
+                    connected=1;
+                catch
+                    retrycount=retrycount+1;
+                    if retrycount==retrylimit
+                        disp('Unable to reconnect?');
+                        disp('Is CS6recorder running?');
+
+                        keyboard;
+                        userdata.socketCS6.close; %close the socket in any case, maybe timeout
+                        userdata.socketCS6=lida_connect_CS6(userdata.lidatimeout);
+                         [activeCS6,sampleCS6,sweepCS6,dataSCS6,dataCCS6,posCS6] = getEmaAll (userdata.socketCS6);
+                        connected=1;
+                    end;
+                end;
+            end;
+        end;
+    end;
+end
+
+skipold=0;
+
+if ~skipold
+    conrepeat=0;
+    maxconrepeat=10;
+    %==================
+    while 1
+        try
+             [activeCS6,sampleCS6,sweepCS6,dataSCS6,dataCCS6,posCS6] = getEmaAll (userdata.socketCS6);
+        catch
+            %disp(['I think I lost the connection...' crlf 'Type return when ready to reconnect!']);
+            userdata.socketCS6.close; %close the socket in any case, maybe timeout
+            %was for different reasons than a broken
+            %socket
+            if (conrepeat >= maxconrepeat)
+                disp('Failed to connect. Is "CS5recorder" running?');
+                disp('Type return to try again.');
+                keyboard;
+                conrepeat=0;
+                disp('Type return to stop');
+                continue;
+            end
+            conrepeat=conrepeat+1;
+            disp(['Connection lost. Auto reconnect try ' num2str(conrepeat) ' of ' num2str(maxconrepeat) '.']);
+            try
+                pause(0.2);
+                userdata.socketCS6=lida_connect_CS6(userdata.lidatimeout);
+                connected=true;
+            catch
+            end
+            continue
+        end
+        break;
+    end
+end
+
+%==================
+
+
+
+%========= CS5 code =============
+
+
+if (1==1)
+
+skipnew=1;
+
+if ~skipnew
+    readok=0;
+    while ~readok
+        try
+             [activeCS5,sampleCS5,sweepCS5,dataSCS5,dataCCS5,posCS5] = getEmaAll (userdata.socketCS5);
+            readok=1;
+        catch
+            disp('Reconnecting ...');
+            %		disp(['I think I lost the connection...' crlf 'Type return when ready to reconnect!']);
+
+            retrycount=0;
+            connected=0;
+            retrylimit=10;
+            while ~connected
+                try
+                    userdata.socketCS5.close; %close the socket in any case, maybe timeout
+                    %was for different reasons than a broken
+                    %socket
+                    userdata.socketCS5=lida_connect_CS5(userdata.lidatimeout);
+                     [activeCS5,sampleCS5,sweepCS5,dataSCS5,dataCCS5,posCS5] = getEmaAll (userdata.socketCS5);
+
+                    connected=1;
+                catch
+                    retrycount=retrycount+1;
+                    if retrycount==retrylimit
+                        disp('Unable to reconnect?');
+                        disp('Is CS5recorder running?');
+
+                        keyboard;
+                        userdata.socketCS5.close; %close the socket in any case, maybe timeout
+                        userdata.socketCS5=lida_connect_CS5(userdata.lidatimeout);
+                         [activeCS5,sampleCS5,sweepCS5,dataSCS5,dataCCS5,posCS5] = getEmaAll (userdata.socketCS5);
+                        connected=1;
+                    end;
+                end;
+            end;
+        end;
+    end;
+end
+
+skipold=0;
+
+if ~skipold
+    conrepeat=0;
+    maxconrepeat=10;
+    %==================
+    while 1
+        try
+             [activeCS5,sampleCS5,sweepCS5,dataSCS5,dataCCS5,posCS5] = getEmaAll (userdata.socketCS5);
+        catch
+            %disp(['I think I lost the connection...' crlf 'Type return when ready to reconnect!']);
+            userdata.socketCS5.close; %close the socket in any case, maybe timeout
+            %was for different reasons than a broken
+            %socket
+            if (conrepeat >= maxconrepeat)
+                disp('Failed to connect. Is "CS5recorder" running?');
+                disp('Type return to try again.');
+                keyboard;
+                conrepeat=0;
+                disp('Type return to stop');
+                continue;
+            end
+            conrepeat=conrepeat+1;
+            disp(['Connection lost. Auto reconnect try ' num2str(conrepeat) ' of ' num2str(maxconrepeat) '.']);
+            try
+                pause(0.2);
+                userdata.socketCS5=lida_connect_CS5(userdata.lidatimeout);
+                connected=true;
+            catch
+            end
+            continue
+        end
+        break;
+    end
+end
+
+end
+%==================
+
+
+pegelCS6=eucdistn(dataSCS6,zeros(size(dataSCS6)));
+posCS6(:,7)=round(pegelCS6*ampfac);
+pegelCS5=eucdistn(dataSCS5,zeros(size(dataSCS5)));
+posCS5(:,7)=round(pegelCS5*ampfac);
+
+BDCS6=userdata.BDCS6;
+BTCS6=userdata.BTCS6;
+BSIZECS6=userdata.BSIZECS6;
+BPOINTCS6=userdata.BPOINTCS6;
+
+BDCS5=userdata.BDCS5;
+BTCS5=userdata.BTCS5;
+BSIZECS5=userdata.BSIZECS5;
+BPOINTCS5=userdata.BPOINTCS5;
+
+
+
+oldactiveCS6=userdata.activeCS6;
+%new trial has started. Get relative time in trial; activate trace?
+if activeCS6 & ~oldactiveCS6
+    tic;
+    BDCS6(:,:,:)=NaN;
+    BTCS6(:)=NaN;
+    BPOINTCS6=1;
+
+end;
+
+if activeCS6
+    set(hf,'name',['Trial ' int2str(sweep) ' running: ' num2str(toc) 's']);
+    BDCS6(:,:,BPOINTCS6)=pos;
+    BTCS6(BPOINTCS6)=toc;
+    BPOINTCS6=BPOINTCS6+1;
+    if BPOINTCS6>BSIZECS6 BPOINTCS6=1; end;
+    BDCS6(:,:,BPOINTCS6)=NaN;
+    hltrajCS6=userdata.hltrajCS6;
+    for jj=1:nchanCS6
+        ichan=chanlistCS6(jj);
+        tmpco=squeeze(BDCS6(ichan,1:3,:));
+        tmpco=tmpco';
+        set(hltrajCS6(jj,:),'xdata',tmpco(:,1),'ydata',tmpco(:,2),'zdata',tmpco(:,3))
+
+    end;
+end;
+
+trialfinished=0;
+if ~activeCS6 & oldactiveCS6
+    %timnum=[get(userdata.timerhandle,'AveragePeriod') userdata.timerperiod];
+    %ring buffer may have wrapped round
+    btmpCS6=BTCS6(BPOINTCS6:BSIZECS6);
+    if BPOINTCS6>1
+        btmpCS6=[btmpCS6;BTCS6(1:(BPOINTCS6-1))];
+    end;
+
+    timnum=[nanmean(diff(btmpCS6)) userdata.timerperiod];
+    timnum=int2str(round(1./timnum));
+    set(hf,'name',['Trial ' int2str(sweep-1) ' lasted ' num2str(toc) 's. Timer rate (Hz: actual,set): ' timnum]);
+    trialfinished=1;
+end;
+
+
+%disp(pos);
+oridataCS6=ones(size(posCS6,1),3);
+[oridataCS6(:,1),oridataCS6(:,2),oridataCS6(:,3)]=sph2cart(posCS6(:,4)*deg2rad,posCS6(:,5)*deg2rad,userdata.orilength);
+
+set(hlallCS6,'xdata',posCS6(chanlistCS6,1),'ydata',posCS6(chanlistCS6,2),'zdata',posCS6(chanlistCS6,3))
+for jj=1:nchanCS6
+    ichan=chanlistCS6(jj);
+    tmpco=ones(2,3)*NaN;
+    tmpco(1,:)=posCS6(ichan,1:3);
+    tmpco(2,:)=posCS6(ichan,1:3)+oridataCS6(ichan,:);
+    set(hlCS6(jj,:),'xdata',tmpco(:,1),'ydata',tmpco(:,2),'zdata',tmpco(:,3))
+
+end;
+chanstrCS6=int2str(chanlistCS6');
+
+set(htCS6,'string',[chanstrCS6 blanks(nchanCS6)' int2str(round(posCS6(chanlistCS6,:)))]);
+userdata.activeCS6=activeCS6;
+userdata.sampleCS6=sampleCS6;
+userdata.sweepCS6=sweepCS6;
+userdata.dataSCS6=dataSCS6;
+userdata.dataCCS6=dataCCS6;
+userdata.posCS6=posCS6;
+
+userdata.BPOINTCS6=BPOINTCS6;
+userdata.BDCS6=BDCS6;
+userdata.BTCS6=BTCS6;
+
+
+
+set(hf,'userdata',userdata);
+
+global DOLIDACOPY
+if (trialfinished && DOLIDACOPY)
+    amppath=userdata.amppath;
+    if ~isempty(amppath)
+        trials=int2str0(sweep-1,ndig);
+        ampname=[userdata.amppath trials '.amp'];
+
+        [mystat,myresult]=system(['echo "/srv/data/' trials '.* ' amppath '" | rcplidaop']);
+        disp(mystat);
+        disp(myresult);
+        data=loadampb(ampname);
+        disp(['max, min, max(abs(diff)) signal level * ' num2str(ampfac)]);
+        for jj=1:nchanCS6
+            ichan=chanlistCS6(jj);
+            tmpdata=data(:,1:ndim,ichan)*ampfac;
+            pegel=eucdistn(tmpdata,zeros(size(tmpdata)));
+            disp([int2str(ichan) ' ' int2str([max(pegel) min(pegel) max(abs(diff(pegel)))])]);
+
+        end;
+    end;
+
+end;
+%function [active,sample,sweep,dataS,dataC,pos] = getEmaAll (s);
+%pos=rand(12,7);
+%dataS=rand(12,6);
+%dataC=dataS;
+%active=round(rand(1));
+%sample=1;
+%sweep=1;
+function showbuffer
+userdata=get(findobj('type','figure','tag','lida_rtmon'),'userdata');
+BDCS6=userdata.BDCS6;
+btCS6=userdata.BTCS6;
+BPOINTCS6=userdata.BPOINTCS6;
+BSIZECS6=userdata.BSIZECS6;
+
+chanlistCS6=userdata.chanlistCS6;
+nchanCS6=length(chanlistCS6);
+chanstrCS6=int2str(chanlistCS6');
+
+bdCS6=bdCS6(chanlistCS6,:,:);
+npar=size(bdCS6,2);
+disp('Ring buffer statistics (min, mean, max)');
+for ipar=1:npar
+    disp(['Parameter ' int2str(ipar)]);
+    tmpd=(squeeze(bdCS6(:,ipar,:)))';
+    mymin=nanmin(tmpd);
+    mymax=nanmax(tmpd);
+    mymean=nanmean(tmpd);
+
+    disp([chanstrCS6 blanks(nchanCS6)' num2str([mymin' mymean' mymax'])]);
+end;
+
+disp('min, mean, max and sd of time interval');
+btmpCS6=btCS6(BPOINTCS6:BSIZECS6);
+if BPOINTCS6>1
+    btmpCS6=[btmpCS6;btCS6(1:(BPOINTCS6-1))];
+end;
+
+dt=diff(btmpCS6);
+disp([nanmin(dt) nanmean(dt) nanmax(dt) nanstd(dt)]);
+
+
+
+
