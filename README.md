@@ -1,5 +1,22 @@
 # Christian Geng
 
+## Hyperparameter Optimization
+
+The adjustment of the many parameters of an algorithm in machine learning is a hard problem. Besides brute force methods, more elegant solutions have gained popularity that fuel hopes to find optimal hyperparameters quicker. My interest in these approaches has been stimulated by end-to-end systems like [Deep Feature synthesis](https://groups.csail.mit.edu/EVO-DesignOpt/groupWebSite/uploads/Site/DSAA_DSM_2015.pdf) 
+This is a blog-like exploration of tuning hyperparameters in machine learning as an [ipython notebook](hyperparamsOptimization/tuneHyperPrams.ipynb). A worked example uses hyperopt, and particular care was taken to demo the use of a custom objective function which is easy when using the python package hyperopt.
+
+
+
+## Amplitude Demodulation
+
+In EMA, induction coils around the head produce an electromagnetic field that induces a current in the sensors in the mouth. In order to 
+get hold of these currents which are modulated onto carrier frequencies, demodulation has to be carried out in order to extract the original information-bearing signal from a modulated carrier wave.
+Matlab is very good at quick stuff like data visualization and prototyping algorithms, but can be slow and needing a performance boost by replacing the slow portions 
+with C code. The C Mex interface then manages data access. Implementation details are found in [this file](AmpDemod/gradDemodCpp/src/gradDemod.cpp). The code was developped under 
+Linux and later generalized to also work under 32-bit windows.
+
+Although a little outdated by the time of writing this, it also recapitulates how to [debug mex files on Eclipse](AmpDemod/gradDemodCpp/src/mexOnEclipseNotes.txt),
+and therefore might be interesting for people aiming to do something similar. 
 
 
 ## Head Motion Correction 
@@ -14,17 +31,16 @@ two point clouds that need to be aligned, after finding centerings in a preproce
  and indeed the quaternion respresentation can be obtained by doing so. The mathematical details can be seen in code [here](include/philm/3dnew/rota_ini.m),
  although it is part of a larger data processing pipeline, and therefore will not run per se. 
  
-## Amplitude Demodulation
 
-In EMA, induction coils around the head produce an electromagnetic field that induces a current in the sensors in the mouth. In order to 
-get hold of these currents which are modulated onto carrier frequencies, demodulation has to be carried out in order to extract the original information-bearing signal from a modulated carrier wave.
-Matlab is very good at quick stuff like data visualization and prototyping algorithms, but can be slow and needing a performance boost by replacing the slow portions 
-with C code. The C Mex interface then manages data access. Implementation details are found in [this file](AmpDemod/gradDemodCpp/src/gradDemod.cpp). The code was developped under 
-Linux and later generalized to also work under 32-bit windows.
+## Real Time Display for two motion trackers in parallel
 
-Although a little outdated by the time of writing this, it also recapitulates how to [debug mex files on Eclipse](AmpDemod/gradDemodCpp/src/mexOnEclipseNotes.txt),
-and therefore might be interesting for people aiming to do something similar. 
+For monitoring data quality during experimental conduct exists this dual EMA RT monitor. 
+It queries the devices TCP Real Time Stream of Online calculated positions, and visualizes these positions on the computer screen. This gives you evidence whether motion tracking works right. The code is a mess, but 
 
+
+## Preprocessing pipeline potsdam
+
+When working in research, I have developped functions that allow to condition motion tracker data such that normally gifted people should easily be able to carry out their own EMA research including the notoriously hated postprocessing. [This](include/cgm/NDIWAVES/index.html) is a pointer to the doxygen-style documentation of the top level scripts.
 
 
 
