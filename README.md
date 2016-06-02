@@ -6,7 +6,9 @@
 The adjustment of the many parameters of an algorithm in machine learning is a hard problem. Besides brute force methods, more elegant solutions have gained popularity that fuel hopes to find optimal hyperparameters quicker. My interest in these approaches has been stimulated by end-to-end systems like [Deep Feature synthesis](https://groups.csail.mit.edu/EVO-DesignOpt/groupWebSite/uploads/Site/DSAA_DSM_2015.pdf) 
 This is a blog-like exploration of tuning hyperparameters in machine learning as an [ipython notebook](hyperparamsOptimization/tuneHyperPrams.ipynb). A worked example uses hyperopt, and particular care was taken to demo the use of a custom objective function which is easy when using the python package hyperopt.
 
+## Misc. Processing
 
+[Data Cleaning Tools](https://github.com/ChristianGeng/python-tools/blob/master/dfMassage.py)
 
 ## Amplitude Demodulation
 
@@ -39,9 +41,6 @@ For monitoring data quality during experimental conduct exists this dual EMA RT 
 It queries the devices TCP Real Time Stream of Online calculated positions, and visualizes these positions on the computer screen. This gives you evidence whether motion tracking works right. The code is a mess, but might be useful for those who wish to study Matlab callbacks. Find it [here](include/cgm/3DUoE/lida_rtmon_dual.m).
 
 
-## Preprocessing pipeline potsdam
-
-When I was still working in research, I have developped functions that allow to condition motion tracker data such that normally gifted people should easily be able to carry out their own EMA research including the notoriously hated postprocessing. [This](include/cgm/NDIWAVES/index.html) is a pointer to the doxygen-style documentation of the templates exposed to end users.
 
 
 
