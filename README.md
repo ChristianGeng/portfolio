@@ -2,7 +2,7 @@
 
 ## Sketch for now: 
 
-[Teaching Materials](https://github.com/ChristianGeng/Phonetik-I)
+[Teaching Materials](https://github.com/ChristianGeng/Phonetik-I)  
 [regex mini demo](https://github.com/ChristianGeng/portfolio/blob/master/misc/regexlinkdetect.py)  
 [DT sketch](https://github.com/ChristianGeng/portfolio/blob/master/misc/dtsketch.pdf)  
 
