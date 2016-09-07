@@ -1,5 +1,12 @@
 # Christian Geng
 
+## Sketch for now: 
+[DT sketch](https://github.com/ChristianGeng/portfolio/blob/master/misc/dtsketch.pdf)
+[Phonetik](https://github.com/ChristianGeng/Phonetik-I)
+
+
+
+
 ## Hyperparameter Optimization
 
 The adjustment of the many parameters of an algorithm in machine learning is a hard problem. Besides brute force methods, more elegant solutions have gained popularity that fuel hopes to find optimal hyperparameters quicker. My interest in these approaches has been stimulated by end-to-end systems like [Deep Feature synthesis](https://groups.csail.mit.edu/EVO-DesignOpt/groupWebSite/uploads/Site/DSAA_DSM_2015.pdf) 
